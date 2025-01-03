@@ -25,7 +25,7 @@ public class MenuService
 
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[yellow]ModManager[/]")
+                    .Title("[yellow]Manage your games[/]")
                     .AddChoices(choices));
 
             if (choice == "Add Game")

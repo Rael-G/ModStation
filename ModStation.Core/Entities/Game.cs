@@ -42,8 +42,8 @@ public class Game
 
     private void InitializePaths()
     {
-        BackupPath = Path.Combine(GamePath, "Backup");
-        ModsPath = Path.Combine(GamePath, "Mods");
+        BackupPath = Path.Combine(GamePath, "ModStation", "Backup");
+        ModsPath = Path.Combine(GamePath, "ModStation", "Mods");
         Directory.CreateDirectory(BackupPath);
         Directory.CreateDirectory(ModsPath);
     }

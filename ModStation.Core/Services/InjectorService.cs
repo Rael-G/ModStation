@@ -1,13 +1,12 @@
-using System.Reflection;
 using ModManager.Core.Repositories;
 
 namespace ModManager.Core.Services;
 
 public class InjectorService
 {
-    public static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)!, "ModManager");
+    public static string DataDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)!, "ModStation");
     
-    private static readonly string _connectionString = $"Data Source={Path.Combine(DataDirectory, "ModManager.db")}";
+    private static readonly string _connectionString = $"Data Source={Path.Combine(DataDirectory, "ModStation.db")}";
     
     public static GamesRepository GamesRepository => new(_connectionString);
 

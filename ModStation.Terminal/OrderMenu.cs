@@ -33,6 +33,7 @@ public class OrderMenu(Game game, Manager manager)
             }
             else if (key == ConsoleKey.Escape)
             {
+                AnsiConsole.Clear();
                 return;
             }
         }
