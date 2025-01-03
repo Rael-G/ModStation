@@ -1,10 +1,13 @@
 using System.IO.Compression;
+using ModManager.Core.Exceptions;
+using ModManager.Core.Services;
+using SharpCompress.Archives;
 
-namespace ModManager;
+namespace ModManager.Core.Entities;
 
 public class Game
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; }
 
     public string Name { get; set; }
 
@@ -14,11 +17,13 @@ public class Game
 
     public string ModsPath { get; set; }
 
-    public List<Mod> Mods { get; set; } = [];
+    public ModList Mods { get; set; } = [];
+
+    public List<Archive> Archives { get; set; } = [];
 
     public Game(string gamePath)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.NewGuid().ToString();
         GamePath = gamePath;
         Name = Path.GetFileName(gamePath);
         BackupPath = Path.Combine(gamePath, "Backup");
@@ -27,7 +32,7 @@ public class Game
         Directory.CreateDirectory(ModsPath);
     }
 
-    public Game(Guid id, string name, string gamePath, string backupPath, string modsPath)
+    public Game(string id, string name, string gamePath, string backupPath, string modsPath)
     {
         Id = id;
         Name = name;
@@ -38,49 +43,89 @@ public class Game
 
     public Game()
     {
-
+        
     }
 
-    public void InstallMod(string zipFilePath)
+    public Mod InstallMod(string archiveFilePath)
     {
-        if (!File.Exists(zipFilePath))
+        if (!File.Exists(archiveFilePath) && !Directory.Exists(archiveFilePath))
         {
-            Console.WriteLine("Zip file not found.");
-            return;
+            throw new ModManagerException($"File or Directory not found at \"{archiveFilePath}\".");
         }
 
-        if (Path.GetExtension(zipFilePath) != ".zip")
-        {
-
-            Console.WriteLine("This is not a zip file." );
-            return;
-        }
-
-        var modName = Path.GetFileNameWithoutExtension(zipFilePath);
-        var modPath = Path.Combine(ModsPath, modName);
+        var modId = Guid.NewGuid().ToString();
+        var modPath = Path.Combine(ModsPath, modId);
 
         Directory.CreateDirectory(modPath);
-        ZipFile.ExtractToDirectory(zipFilePath, modPath);
-        
 
-        var mod = new Mod(Guid.NewGuid(), modName, modPath, this);
+        if (!File.Exists(archiveFilePath) && Directory.Exists(archiveFilePath))
+        {
+            CopyDirectory(archiveFilePath, ModsPath);
+        }
+        else
+        {
+            using var archive = ArchiveFactory.Open(archiveFilePath);
+            archive.ExtractToDirectory(modPath);
+        }
+
+        var modName = Path.GetFileNameWithoutExtension(archiveFilePath);
+        var mod = new Mod(modId, modName, modPath, this);
+        InjectorService.ModsRepository.Create(mod);
         Mods.Add(mod);
+        mod.Install();
         mod.Enable();
+
+        return mod;
     }
 
     public void UninstallMod(Mod mod)
     {
-        mod.Disable();
-        if (Directory.Exists(mod.ModPath))
-        {
-            Directory.Delete(mod.ModPath, true);
-        }
+        mod.Uninstall();
         Mods.Remove(mod);
     }
 
-    public void UpdateMod(Mod mod, string zipFilePath)
+    public void UpdateMod(Mod mod, string filePath)
     {
         UninstallMod(mod);
-        InstallMod(zipFilePath);
+        InstallMod(filePath);
     }
+
+    public void SwapOrder(Mod mod, int order)
+    {
+        mod.Disable();
+        Mods.AddAtIndex(mod, order);
+        mod.Enable();
+    }
+
+    public void RemoveGame()
+    {
+        foreach (var mod in Mods)
+        {
+            mod.Uninstall();
+        }
+        Mods.Clear();
+
+        foreach (var archive in Archives)
+        {
+            InjectorService.ArchivesRepository.Delete(archive);
+        }
+
+        Directory.Delete(BackupPath, recursive: true);
+        Directory.Delete(ModsPath, recursive: true);
+        InjectorService.GamesRepository.Delete(this);
+    }
+
+    private static void CopyDirectory(string sourcePath, string targetPath)
+    {
+        foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+        {
+            Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+        }
+
+        foreach (string newPath in Directory.GetFiles(sourcePath, "*.*",SearchOption.AllDirectories))
+        {
+            File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+        }
+    }
+
 }

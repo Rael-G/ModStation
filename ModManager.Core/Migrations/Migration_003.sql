@@ -1,0 +1,2 @@
+ALTER TABLE Mods
+ADD "Order" INTEGER;

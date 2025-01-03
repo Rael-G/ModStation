@@ -1,0 +1,2 @@
+ALTER TABLE Mods
+DROP COLUMN IsOverwritten;

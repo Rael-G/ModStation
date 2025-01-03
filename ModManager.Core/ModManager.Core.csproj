@@ -6,4 +6,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Lilmihe.Lib" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+    <PackageReference Include="SharpCompress" Version="0.38.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Migrations\*" CopyToOutputDirectory="PreserveNewest" TargetPath="\migrations\%(Filename)%(Extension)">
+    </Content>
+</ItemGroup>
+
 </Project>

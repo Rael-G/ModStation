@@ -1,9 +1,10 @@
-﻿
-namespace ModManager;
+﻿using ModManager.Core.Services;
+
+namespace ModManager.Core.Entities;
 
 public class Mod
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; }
 
     public string Name { get; set; }
 
@@ -11,52 +12,83 @@ public class Mod
 
     public Game Game { get; set; }
 
-    public bool IsEnable { get; private set; }
+    public bool IsEnable { get; set; }
 
-    public List<string> OverwrittenFiles { get; private set; }
+    public List<Archive> Archives { get; set; }
 
-    public Mod(Guid id, string name, string modPath, Game game, bool isEnable = false, List<string>? overwrittenFiles = null)
+    public int Order { get; set; }
+
+    public string GameId => Game.Id;
+
+    public Mod(string id, string name, string modPath, Game game, bool isEnable = false, List<Archive>? archives = null)
     {
         Id = id;
         Name = name;
         ModPath = modPath;
         Game = game;
         IsEnable = isEnable;
-        OverwrittenFiles = overwrittenFiles?? [];
+        Archives = archives?? [];
     }
 
     public Mod()
     {
-        
+
     }
 
-    public void Enable()
+    public void Install()
     {
         foreach (var filePath in Directory.GetFiles(ModPath, "*", SearchOption.AllDirectories))
         {
             string relativePath = Path.GetRelativePath(ModPath, filePath);
-            string targetPath = Path.Combine(Game.GamePath, relativePath);
+            
+            var archive = Game.Archives.Where(a => a.RelativePath == relativePath).FirstOrDefault();
 
-            // Original file backup
-            if (File.Exists(targetPath))
+            if (archive is null)
             {
-                string backupPath = Path.Combine(Game.BackupPath, relativePath);
-                Directory.CreateDirectory(Path.GetDirectoryName(backupPath));
-                try
-                {
-                    File.Copy(targetPath, backupPath, false);
-                }
-                catch(IOException)
-                {
-                    // if the file already exists, its ok
-                }
+                archive = new(Guid.NewGuid().ToString(), relativePath, Game, []);
+                InjectorService.ArchivesRepository.Create(archive);
             }
+            Archives.Add(archive);
+            archive.Mods.Add(this);
+            InjectorService.ArchiveModRepository.Create(archive.Id, Id);
+        }
+    }
 
-            OverwrittenFiles.Add(targetPath);
+    public void Uninstall()
+    {
+        Disable();
 
-            // Overwrite game files with mod
-            Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-            File.Copy(filePath, targetPath, true);
+        foreach (var archive in Archives)
+        {
+            InjectorService.ArchiveModRepository.Delete(archive.Id, Id);
+        }
+        InjectorService.ModsRepository.Delete(this);
+        
+        if (Directory.Exists(ModPath))
+        {
+            Directory.Delete(ModPath, true);
+        }
+    }
+
+    public void Enable()
+    {
+        if (IsEnable)
+        {
+            return;
+        }
+
+        foreach (var archive in Archives)
+        {
+            if (!archive.Mods.Any(m => m.Order > Order && m.IsEnable))
+            {
+                var targetDirectory = Path.GetDirectoryName(archive.TargetPath);
+                if (!string.IsNullOrEmpty(targetDirectory))
+                {
+                    Directory.CreateDirectory(targetDirectory);
+                }
+
+                File.Copy(archive.ModPath(this), archive.TargetPath, true);
+            }
         }
 
         IsEnable = true;
@@ -69,20 +101,33 @@ public class Mod
             return;
         }
 
-        foreach (var filePath in OverwrittenFiles)
+        IsEnable = false;
+
+        foreach (var archive in Archives)
         {
-            string relativePath = Path.GetRelativePath(Game.GamePath, filePath);
-            string backupPath = Path.Combine(Game.BackupPath, relativePath);
+            if (File.Exists(archive.TargetPath)) 
+            { 
+                File.Delete(archive.TargetPath);
+            }
 
-            File.Delete(filePath);
+            string fileToReplace;
+            var highOrderMod = archive.Mods.Where(m => m.IsEnable).OrderByDescending(m => m.Order).FirstOrDefault();
 
-            // Restore original files
-            if (File.Exists(backupPath))
+            if(highOrderMod is not null)
             {
-                File.Copy(backupPath, filePath, true);
+                // Restore the file from the high ordered mod
+                fileToReplace = Path.Combine(highOrderMod.ModPath, archive.RelativePath);
+            }
+            else
+            {
+                // If there are no other mods overwriting this file, restore the original file
+               fileToReplace = archive.BackupPath;
+            }
+
+            if (File.Exists(fileToReplace))
+            {
+                File.Copy(fileToReplace, archive.TargetPath, true);
             }
         }
-
-        IsEnable = false;
     }
 }
