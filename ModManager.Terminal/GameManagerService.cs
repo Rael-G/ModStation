@@ -1,7 +1,6 @@
 using Spectre.Console;
 using ModManager.Core.Entities;
 using ModManager.Core.Exceptions;
-using ModManager.Core.Services;
 
 namespace ModManager.Terminal;
 
@@ -31,27 +30,23 @@ public class GameManagerService(Manager manager)
             return;
         }
 
+        var name = AnsiConsole.Prompt(
+            new TextPrompt<string>("[yellow]Do you want to keep this name?[/]")
+                .DefaultValue(Path.GetFileName(gamePath))
+                .AllowEmpty()
+                .PromptStyle("cyan"));
+
         try
         {
-            var game = _manager.AddGame(gamePath);
-
-            game.Name = AnsiConsole.Prompt(
-                new TextPrompt<string>("[yellow]Do you want to keep this name?[/]")
-                    .DefaultValue(game.Name)
-                    .AllowEmpty()
-                    .PromptStyle("cyan"));
-
+            _manager.AddGame(gamePath, name);
             _manager.Save();
-            AnsiConsole.MarkupLine("[green]Game added successfully![/]");
+
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine($"[green]{name} added successfully![/]");
         }
         catch (DuplicatedEntity e)
         {
             AnsiConsole.MarkupLine($"[red]{e.Message}[/]");
         }
-    }
-
-    public void Save()
-    {
-        _manager.Save();
     }
 }

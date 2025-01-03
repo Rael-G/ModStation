@@ -29,11 +29,12 @@ public class ModManagerService(Manager manager)
             {
                 InstallMod(game);
             }
-            if (choice == "Remove Game")
+            else if (choice == "Remove Game")
             {
                 RemoveGame(game);
+                break;
             }
-            if (choice == "Change Order")
+            else if (choice == "Change Order")
             {
                 SwapOrderMenu(game);
             }
@@ -66,12 +67,14 @@ public class ModManagerService(Manager manager)
             return;
         }
 
-        var mod = game.InstallMod(modPath);
-        mod.Name = AnsiConsole.Prompt(
+        var modName = Path.GetFileNameWithoutExtension(modPath);
+        modName = AnsiConsole.Prompt(
             new TextPrompt<string>("[yellow]Do you want to keep this name?[/]")
-                .DefaultValue(mod.Name)
+                .DefaultValue(modName)
                 .AllowEmpty()
                 .PromptStyle("cyan"));
+
+        game.InstallMod(modPath, modName);
 
         AnsiConsole.MarkupLine("[green]Mod installed and enabled successfully![/]");
     }

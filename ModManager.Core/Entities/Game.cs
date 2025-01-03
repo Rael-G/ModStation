@@ -21,11 +21,11 @@ public class Game
 
     public List<Archive> Archives { get; set; } = [];
 
-    public Game(string gamePath)
+    public Game(string gamePath, string name)
     {
         Id = Guid.NewGuid().ToString();
         GamePath = gamePath;
-        Name = Path.GetFileName(gamePath);
+        Name = name;
         BackupPath = Path.Combine(gamePath, "Backup");
         ModsPath = Path.Combine(gamePath, "Mods");
         Directory.CreateDirectory(BackupPath);
@@ -46,7 +46,7 @@ public class Game
         
     }
 
-    public Mod InstallMod(string archiveFilePath)
+    public void InstallMod(string archiveFilePath, string modName)
     {
         if (!File.Exists(archiveFilePath) && !Directory.Exists(archiveFilePath))
         {
@@ -68,14 +68,11 @@ public class Game
             archive.ExtractToDirectory(modPath);
         }
 
-        var modName = Path.GetFileNameWithoutExtension(archiveFilePath);
         var mod = new Mod(modId, modName, modPath, this);
         InjectorService.ModsRepository.Create(mod);
         Mods.Add(mod);
         mod.Install();
         mod.Enable();
-
-        return mod;
     }
 
     public void UninstallMod(Mod mod)
@@ -87,7 +84,7 @@ public class Game
     public void UpdateMod(Mod mod, string filePath)
     {
         UninstallMod(mod);
-        InstallMod(filePath);
+        InstallMod(filePath, mod.Name);
     }
 
     public void SwapOrder(Mod mod, int order)

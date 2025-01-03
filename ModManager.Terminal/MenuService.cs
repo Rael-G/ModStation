@@ -34,7 +34,7 @@ public class MenuService
             }
             else if (choice == "Exit")
             {
-                _gameManager.Save();
+                _manager.Save();
                 Environment.Exit(0);
             }
             else

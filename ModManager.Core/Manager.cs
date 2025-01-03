@@ -8,14 +8,13 @@ public class Manager(List<Game> games)
 {
     public List<Game> Games { get; set; } = games;
 
-    public Game AddGame(string gamePath)
+    public void AddGame(string gamePath, string name)
     {
         if (!Games.Any(g => g.GamePath == gamePath))
         {
-            var game = new Game(gamePath);
+            var game = new Game(gamePath, name);
             InjectorService.GamesRepository.Create(game);
             Games.Add(game);
-            return game;
         }
         else
         {
