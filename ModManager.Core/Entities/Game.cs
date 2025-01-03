@@ -7,72 +7,67 @@ namespace ModManager.Core.Entities;
 
 public class Game
 {
-    public string Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string GamePath { get; set; }
-
-    public string BackupPath { get; set; }
-
-    public string ModsPath { get; set; }
-
+    public string Id { get; private set; }
+    public string Name { get; private set; }
+    public string GamePath { get; private set; }
+    public string BackupPath { get; private set; }
+    public string ModsPath { get; private set; }
     public ModList Mods { get; set; } = [];
-
     public List<Archive> Archives { get; set; } = [];
 
+    // Primary constructor
     public Game(string gamePath, string name)
     {
         Id = Guid.NewGuid().ToString();
-        GamePath = gamePath;
         Name = name;
-        BackupPath = Path.Combine(gamePath, "Backup");
-        ModsPath = Path.Combine(gamePath, "Mods");
-        Directory.CreateDirectory(BackupPath);
-        Directory.CreateDirectory(ModsPath);
+        GamePath = gamePath;
+        InitializePaths();
     }
 
-    public Game(string id, string name, string gamePath, string backupPath, string modsPath)
+    // Overloaded constructor for existing games
+    public Game(string id, string name, string gamePath, string backupPath, string modsPath, ModList mods, List<Archive> archives)
     {
         Id = id;
         Name = name;
         GamePath = gamePath;
         BackupPath = backupPath;
         ModsPath = modsPath;
+        Mods = mods;
+        Archives = archives;
     }
 
-    public Game()
+    // Parameterless constructor for serialization
+    public Game() { }
+
+    private void InitializePaths()
     {
-        
+        BackupPath = Path.Combine(GamePath, "Backup");
+        ModsPath = Path.Combine(GamePath, "Mods");
+        Directory.CreateDirectory(BackupPath);
+        Directory.CreateDirectory(ModsPath);
     }
 
     public void InstallMod(string archiveFilePath, string modName)
     {
-        if (!File.Exists(archiveFilePath) && !Directory.Exists(archiveFilePath))
-        {
-            throw new ModManagerException($"File or Directory not found at \"{archiveFilePath}\".");
-        }
+        ValidatePath(archiveFilePath);
 
         var modId = Guid.NewGuid().ToString();
         var modPath = Path.Combine(ModsPath, modId);
-
         Directory.CreateDirectory(modPath);
 
-        if (!File.Exists(archiveFilePath) && Directory.Exists(archiveFilePath))
+        if (Directory.Exists(archiveFilePath))
         {
-            CopyDirectory(archiveFilePath, ModsPath);
+            CopyDirectory(archiveFilePath, modPath);
         }
         else
         {
-            using var archive = ArchiveFactory.Open(archiveFilePath);
-            archive.ExtractToDirectory(modPath);
+            ExtractArchiveToDirectory(archiveFilePath, modPath);
         }
 
-        var mod = new Mod(modId, modName, modPath, this);
+        var mod = new Mod(modId, modName, modPath, this, []);
         InjectorService.ModsRepository.Create(mod);
         Mods.Add(mod);
         mod.Install();
-        mod.Enable();
     }
 
     public void UninstallMod(Mod mod)
@@ -96,33 +91,61 @@ public class Game
 
     public void RemoveGame()
     {
+        UninstallAllMods();
+        ClearArchives();
+        DeleteDirectories();
+        InjectorService.GamesRepository.Delete(this);
+    }
+
+    private void UninstallAllMods()
+    {
         foreach (var mod in Mods)
         {
             mod.Uninstall();
         }
         Mods.Clear();
+    }
 
+    private void ClearArchives()
+    {
         foreach (var archive in Archives)
         {
             InjectorService.ArchivesRepository.Delete(archive);
         }
+        Archives.Clear();
+    }
 
-        Directory.Delete(BackupPath, recursive: true);
-        Directory.Delete(ModsPath, recursive: true);
-        InjectorService.GamesRepository.Delete(this);
+    private void DeleteDirectories()
+    {
+        if (Directory.Exists(BackupPath)) Directory.Delete(BackupPath, recursive: true);
+        if (Directory.Exists(ModsPath)) Directory.Delete(ModsPath, recursive: true);
+    }
+
+    private static void ValidatePath(string path)
+    {
+        if (!File.Exists(path) && !Directory.Exists(path))
+        {
+            throw new ModManagerException($"File or Directory not found at \"{path}\".");
+        }
     }
 
     private static void CopyDirectory(string sourcePath, string targetPath)
     {
-        foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+        foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
         {
-            Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+            Directory.CreateDirectory(Path.Combine(targetPath, Path.GetRelativePath(sourcePath, dirPath)));
         }
 
-        foreach (string newPath in Directory.GetFiles(sourcePath, "*.*",SearchOption.AllDirectories))
+        foreach (var filePath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
         {
-            File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+            var targetFilePath = Path.Combine(targetPath, Path.GetRelativePath(sourcePath, filePath));
+            File.Copy(filePath, targetFilePath, overwrite: true);
         }
     }
 
+    private static void ExtractArchiveToDirectory(string archiveFilePath, string targetPath)
+    {
+        using var archive = ArchiveFactory.Open(archiveFilePath);
+        archive.ExtractToDirectory(targetPath);
+    }
 }

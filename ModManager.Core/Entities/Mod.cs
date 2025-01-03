@@ -4,90 +4,60 @@ namespace ModManager.Core.Entities;
 
 public class Mod
 {
-    public string Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string ModPath { get; set; }
-
+    public string Id { get; private set; }
+    public string Name { get; private set; }
+    public string ModPath { get; private set; }
     public Game Game { get; set; }
-
-    public bool IsEnable { get; set; }
-
     public List<Archive> Archives { get; set; }
-
+    public bool IsEnable { get; private set; }
     public int Order { get; set; }
+    public string GameId { get; private set; }
 
-    public string GameId => Game.Id;
-
-    public Mod(string id, string name, string modPath, Game game, bool isEnable = false, List<Archive>? archives = null)
+    public Mod(string id, string name, string modPath, Game game, List<Archive> archives, bool isEnable = false)
     {
         Id = id;
         Name = name;
         ModPath = modPath;
         Game = game;
+        GameId = game.Id;
+        Archives = archives;
         IsEnable = isEnable;
-        Archives = archives?? [];
     }
 
-    public Mod()
-    {
-
-    }
+    public Mod() { }
 
     public void Install()
     {
         foreach (var filePath in Directory.GetFiles(ModPath, "*", SearchOption.AllDirectories))
         {
             string relativePath = Path.GetRelativePath(ModPath, filePath);
-            
-            var archive = Game.Archives.Where(a => a.RelativePath == relativePath).FirstOrDefault();
+            var archive = Game.Archives.FirstOrDefault(a => a.RelativePath == relativePath) 
+                          ?? CreateAndRegisterArchive(relativePath);
 
-            if (archive is null)
-            {
-                archive = new(Guid.NewGuid().ToString(), relativePath, Game, []);
-                InjectorService.ArchivesRepository.Create(archive);
-            }
             Archives.Add(archive);
-            archive.Mods.Add(this);
-            InjectorService.ArchiveModRepository.Create(archive.Id, Id);
+            Game.Archives.Add(archive);
+            LinkArchiveToMod(archive);
         }
     }
 
     public void Uninstall()
     {
-        Disable();
+        if (IsEnable) Disable();
 
-        foreach (var archive in Archives)
-        {
-            InjectorService.ArchiveModRepository.Delete(archive.Id, Id);
-        }
-        InjectorService.ModsRepository.Delete(this);
-        
-        if (Directory.Exists(ModPath))
-        {
-            Directory.Delete(ModPath, true);
-        }
+        UnlinkArchives();
+        DeleteModFiles();
     }
 
     public void Enable()
     {
-        if (IsEnable)
-        {
-            return;
-        }
+        if (IsEnable) return;
 
         foreach (var archive in Archives)
         {
-            if (!archive.Mods.Any(m => m.Order > Order && m.IsEnable))
+            if (!IsOverwrittenByHigherOrderMod(archive))
             {
-                var targetDirectory = Path.GetDirectoryName(archive.TargetPath);
-                if (!string.IsNullOrEmpty(targetDirectory))
-                {
-                    Directory.CreateDirectory(targetDirectory);
-                }
-
-                File.Copy(archive.ModPath(this), archive.TargetPath, true);
+                EnsureTargetDirectoryExists(archive.TargetPath);
+                File.Copy(archive.ModPath(this), archive.TargetPath, overwrite: true);
             }
         }
 
@@ -96,38 +66,88 @@ public class Mod
 
     public void Disable()
     {
-        if (!IsEnable)
-        {
-            return;
-        }
+        if (!IsEnable) return;
 
         IsEnable = false;
 
         foreach (var archive in Archives)
         {
-            if (File.Exists(archive.TargetPath)) 
-            { 
-                File.Delete(archive.TargetPath);
-            }
+            DeleteFileIfExists(archive.TargetPath);
 
-            string fileToReplace;
-            var highOrderMod = archive.Mods.Where(m => m.IsEnable).OrderByDescending(m => m.Order).FirstOrDefault();
+            string replacementFile = GetReplacementFilePath(archive);
+            if (!string.IsNullOrEmpty(replacementFile) && File.Exists(replacementFile))
+            {
+                File.Copy(replacementFile, archive.TargetPath, overwrite: true);
+            }
+        }
 
-            if(highOrderMod is not null)
-            {
-                // Restore the file from the high ordered mod
-                fileToReplace = Path.Combine(highOrderMod.ModPath, archive.RelativePath);
-            }
-            else
-            {
-                // If there are no other mods overwriting this file, restore the original file
-               fileToReplace = archive.BackupPath;
-            }
+    }
 
-            if (File.Exists(fileToReplace))
-            {
-                File.Copy(fileToReplace, archive.TargetPath, true);
-            }
+    private Archive CreateAndRegisterArchive(string relativePath)
+    {
+        var archive = new Archive(Guid.NewGuid().ToString(), relativePath, Game, new List<Mod>());
+        InjectorService.ArchivesRepository.Create(archive);
+        return archive;
+    }
+
+    private void LinkArchiveToMod(Archive archive)
+    {
+        archive.Mods.Add(this);
+        InjectorService.ArchiveModRepository.Create(archive.Id, Id);
+    }
+
+    private void UnlinkArchives()
+    {
+        foreach (var archive in Archives)
+        {
+            InjectorService.ArchiveModRepository.Delete(archive.Id, Id);
+        }
+
+        InjectorService.ModsRepository.Delete(this);
+    }
+
+    private void DeleteModFiles()
+    {
+        if (Directory.Exists(ModPath))
+        {
+            Directory.Delete(ModPath, recursive: true);
+        }
+    }
+
+    private bool IsOverwrittenByHigherOrderMod(Archive archive)
+    {
+        return archive.Mods.Any(m => m.Order > Order && m.IsEnable);
+    }
+
+    private void EnsureTargetDirectoryExists(string targetPath)
+    {
+        var directory = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+    }
+
+    private string GetReplacementFilePath(Archive archive)
+    {
+        var higherOrderMod = archive.Mods
+            .Where(m => m.IsEnable)
+            .OrderByDescending(m => m.Order)
+            .FirstOrDefault();
+
+        if (higherOrderMod != null)
+        {
+            return Path.Combine(higherOrderMod.ModPath, archive.RelativePath);
+        }
+
+        return archive.BackupPath;
+    }
+
+    private void DeleteFileIfExists(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
         }
     }
 }
