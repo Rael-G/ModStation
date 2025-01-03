@@ -9,10 +9,15 @@ public class ModManagerService(Manager manager)
 
     public void ManageMods(Game game)
     {
+        static string ModOption(Mod mod)
+        {
+            return $"{(mod.IsEnable ? "[green]" : "[red]")}{mod.Name}{(mod.IsEnable ? " (Enabled)" : " (Disabled)")}[/]";
+        }
+
         while (true)
         {
             var modChoices = game.Mods
-                .Select(m => $"{(m.IsEnable ? "[green]" : "[red]")}{m.Name}{(m.IsEnable ? " (Enabled)" : " (Disabled)")}[/]")
+                .Select(ModOption)
                 .ToList();
             modChoices.Add("Install Mod");
             modChoices.Add("Remove Game");
@@ -49,8 +54,8 @@ public class ModManagerService(Manager manager)
             }
             else
             {
-                var modName = choice.Split(" (")[0];
-                var mod = game.Mods.First(m => modName.Contains(m.Name));
+                var mod = game.Mods
+                    .First(m => choice == ModOption(m));
                 ManageModActions(mod);
             }
         }
@@ -68,6 +73,7 @@ public class ModManagerService(Manager manager)
         }
 
         var modName = Path.GetFileNameWithoutExtension(modPath);
+        AnsiConsole.Clear();
         modName = AnsiConsole.Prompt(
             new TextPrompt<string>("[yellow]Do you want to keep this name?[/]")
                 .DefaultValue(modName)
@@ -76,7 +82,8 @@ public class ModManagerService(Manager manager)
 
         game.InstallMod(modPath, modName);
 
-        AnsiConsole.MarkupLine($"[green]{modName} installed and enabled![/]");
+        AnsiConsole.Clear();
+        AnsiConsole.MarkupLine($"[green]{modName} installed![/]");
     }
 
     private void ManageModActions(Mod mod)
@@ -121,10 +128,10 @@ public class ModManagerService(Manager manager)
 
     private void RemoveGame(Game game)
     {
-        AnsiConsole.Clear();
         var confirm = AnsiConsole.Confirm("[red]This action will remove all mods from [blue]" + game.Name + "[/]. Are you sure?[/]", false);
         if (confirm)
         {
+            AnsiConsole.Clear();
             AnsiConsole.Status().Start($"Removing {game.Name} ...", ctx =>
             {
                 _manager.RemoveGame(game);
