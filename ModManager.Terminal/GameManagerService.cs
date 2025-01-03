@@ -15,7 +15,7 @@ public class GameManagerService(Manager manager)
 
     public Game GetGameByName(string name)
     {
-        return _manager.Games.First(g => name.Contains(g.Name));
+        return _manager.Games.Last(g => name.Contains(g.Name));
     }
 
     public void AddGame()
@@ -44,7 +44,7 @@ public class GameManagerService(Manager manager)
             AnsiConsole.Clear();
             AnsiConsole.MarkupLine($"[green]{name} added successfully![/]");
         }
-        catch (DuplicatedEntity e)
+        catch (DuplicatedEntityException e)
         {
             AnsiConsole.MarkupLine($"[red]{e.Message}[/]");
         }

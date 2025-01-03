@@ -7,7 +7,7 @@ public static class ListExtensions
     public static ModList ToModList(this IEnumerable<Mod> list)
     {
         var modList = new ModList();
-        foreach (var mod in list.OrderBy(a => a.Order))
+        foreach (var mod in list.OrderByDescending(a => a.Order))
         {
             modList.Add(mod);
         }
@@ -19,8 +19,16 @@ public class ModList : List<Mod>
 {
     public new void Add(Mod mod)
     {
+        foreach (var m in this)
+        {
+            m.Order++;
+        }
+
+        mod.Order = 0;
+
         base.Add(mod);
-        mod.Order = Count;
+
+        Sort();
     }
 
     public new void AddAtIndex(Mod mod, int newOrder)
@@ -61,7 +69,7 @@ public class ModList : List<Mod>
 
     public void Swap(int orderA, int orderB)
     {
-        if (orderA > Count || orderA < 0 || orderB > Count || orderB < 0)
+        if (orderA >= Count || orderA < 0 || orderB >= Count || orderB < 0)
         {
             throw new ModManagerException("The order range is out of bounds.");
         }

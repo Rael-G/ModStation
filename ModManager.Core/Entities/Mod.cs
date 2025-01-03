@@ -54,7 +54,7 @@ public class Mod
 
         foreach (var archive in Archives)
         {
-            if (!IsOverwrittenByHigherOrderMod(archive))
+            if (!IsOverwrittenByLowerOrderMod(archive))
             {
                 EnsureTargetDirectoryExists(archive.TargetPath);
                 File.Copy(archive.ModPath(this), archive.TargetPath, overwrite: true);
@@ -80,7 +80,6 @@ public class Mod
                 File.Copy(replacementFile, archive.TargetPath, overwrite: true);
             }
         }
-
     }
 
     private Archive CreateAndRegisterArchive(string relativePath)
@@ -114,9 +113,9 @@ public class Mod
         }
     }
 
-    private bool IsOverwrittenByHigherOrderMod(Archive archive)
+    private bool IsOverwrittenByLowerOrderMod(Archive archive)
     {
-        return archive.Mods.Any(m => m.Order > Order && m.IsEnable);
+        return archive.Mods.Any(m => m.Order < Order && m.IsEnable);
     }
 
     private void EnsureTargetDirectoryExists(string targetPath)
@@ -130,14 +129,14 @@ public class Mod
 
     private string GetReplacementFilePath(Archive archive)
     {
-        var higherOrderMod = archive.Mods
-            .Where(m => m.IsEnable)
-            .OrderByDescending(m => m.Order)
+        var lowerOrderMod = archive.Mods
+            .Where(m => m.IsEnable && m.Id != Id)
+            .OrderBy(m => m.Order)
             .FirstOrDefault();
 
-        if (higherOrderMod != null)
+        if (lowerOrderMod != null)
         {
-            return Path.Combine(higherOrderMod.ModPath, archive.RelativePath);
+            return Path.Combine(lowerOrderMod.ModPath, archive.RelativePath);
         }
 
         return archive.BackupPath;

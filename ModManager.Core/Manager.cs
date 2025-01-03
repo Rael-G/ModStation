@@ -18,7 +18,7 @@ public class Manager(List<Game> games)
         }
         else
         {
-            throw new DuplicatedEntity("This game is already registered.");
+            throw new DuplicatedEntityException("This game is already registered.");
         }
     }
 

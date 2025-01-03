@@ -30,6 +30,9 @@ public class OrderMenu(Game game, Manager manager)
             if (key == ConsoleKey.Enter)
             {
                 AdjustOrder();
+            }
+            else if (key == ConsoleKey.Escape)
+            {
                 return;
             }
         }
@@ -44,7 +47,7 @@ public class OrderMenu(Game game, Manager manager)
 
         foreach (var mod in _orderedMods.Select((m, index) => new { Mod = m, Index = index }))
         {
-            string orderText = (mod.Index + 1).ToString();
+            string orderText = (mod.Mod.Order + 1).ToString();
             string modName = mod.Mod.Name;
 
             if (mod.Index == _currentIndex)
@@ -58,7 +61,7 @@ public class OrderMenu(Game game, Manager manager)
         }
 
         AnsiConsole.Write(table);
-        AnsiConsole.MarkupLine("\n[gray]Use the ↑ ↓ arrow keys to adjust the position and press Enter to confirm.[/]");
+        AnsiConsole.MarkupLine("\n[gray]Use the ↑ ↓ arrow keys to adjust the position, press Enter to confirm and Escape do finish.[/]");
     }
 
     private void HandleKeyPress(ConsoleKey key)
@@ -83,18 +86,16 @@ public class OrderMenu(Game game, Manager manager)
 
             if (key == ConsoleKey.UpArrow && _currentIndex > 0)
             {
-                SwapMods(_currentIndex, _currentIndex - 1);
-                _currentIndex--;
+                SwapMods(_currentIndex, --_currentIndex);
             }
             else if (key == ConsoleKey.DownArrow && _currentIndex < _orderedMods.Count - 1)
             {
-                SwapMods(_currentIndex, _currentIndex + 1);
-                _currentIndex++;
+                SwapMods(_currentIndex, ++_currentIndex);
             }
             else if (key == ConsoleKey.Enter)
             {
                 ApplyOrderChanges();
-                return;
+                break;
             }
         }
     }
@@ -108,7 +109,7 @@ public class OrderMenu(Game game, Manager manager)
 
         foreach (var mod in _orderedMods.Select((m, index) => new { Mod = m, Index = index }))
         {
-            string orderText = (mod.Index + 1).ToString();
+            string orderText = (mod.Mod.Order + 1).ToString();
             string modName = mod.Mod.Name;
 
             if (mod.Index == _currentIndex)
@@ -135,7 +136,7 @@ public class OrderMenu(Game game, Manager manager)
         AnsiConsole.Status().Start("Adjusting mod order...", ctx =>
         {
             var modToMove = _orderedMods[_currentIndex];
-            _game.SwapOrder(modToMove, _currentIndex + 1);
+            _game.SwapOrder(modToMove, _currentIndex);
             _manager.Save();
         });
 
