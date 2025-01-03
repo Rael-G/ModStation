@@ -1,5 +1,6 @@
 using Spectre.Console;
 using ModManager.Core.Entities;
+using ModManager.Core.Exceptions;
 
 namespace ModManager.Terminal;
 
@@ -68,6 +69,7 @@ public class ModManagerService(Manager manager)
 
         if (!File.Exists(modPath) && !Directory.Exists(modPath))
         {
+            AnsiConsole.Clear();
             AnsiConsole.MarkupLine("[red]File not found![/]");
             return;
         }
@@ -80,7 +82,16 @@ public class ModManagerService(Manager manager)
                 .AllowEmpty()
                 .PromptStyle("cyan"));
 
-        game.InstallMod(modPath, modName);
+        try
+        {
+            game.InstallMod(modPath, modName);
+        }
+        catch(DuplicatedEntityException e)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine($"[red]{e.Message}[/]");
+            return;
+        }
 
         AnsiConsole.Clear();
         AnsiConsole.MarkupLine($"[green]{modName} installed![/]");

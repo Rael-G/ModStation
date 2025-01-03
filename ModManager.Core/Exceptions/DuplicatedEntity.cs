@@ -1,18 +1,18 @@
 namespace ModManager.Core.Exceptions;
 
-public class DuplicatedEntity : ModManagerException
+public class DuplicatedEntityException : ModManagerException
 {
-    public DuplicatedEntity()
+    public DuplicatedEntityException()
     {
         
     }
 
-    public DuplicatedEntity(string? message) : base(message)
+    public DuplicatedEntityException(string? message) : base(message)
     {
         
     }
 
-    public DuplicatedEntity(string? message, Exception? innerException) : base(message, innerException) 
+    public DuplicatedEntityException(string? message, Exception? innerException) : base(message, innerException) 
     {
         
     }

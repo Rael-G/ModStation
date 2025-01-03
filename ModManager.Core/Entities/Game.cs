@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.IO.Compression;
 using ModManager.Core.Exceptions;
 using ModManager.Core.Services;
@@ -65,7 +66,16 @@ public class Game
         }
 
         var mod = new Mod(modId, modName, modPath, this, []);
-        InjectorService.ModsRepository.Create(mod);
+        try
+        {
+            InjectorService.ModsRepository.Create(mod);
+        }
+        catch(DbException e)
+        {
+            Directory.Delete(modPath, true);
+            throw new DuplicatedEntityException("There alredy is a mod with this name.", e);
+        }
+
         Mods.Add(mod);
         mod.Install();
     }
