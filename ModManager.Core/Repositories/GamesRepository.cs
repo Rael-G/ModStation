@@ -105,6 +105,7 @@ public class GamesRepository(string connectionString) : BaseRepository(connectio
             {
                 sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ModId = @ModId";
                 var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ModId = mod.Id });
+
                 mod.Archives = game.Archives
                     .Where(a => modArchives.Any(ma => ma.ModId == mod.Id && ma.ArchiveId == a.Id))
                     .ToList();

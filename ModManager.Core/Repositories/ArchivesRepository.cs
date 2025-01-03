@@ -40,48 +40,4 @@ public class ArchivesRepository(string connectionString) : BaseRepository(connec
         ";
         connection.Execute(sql, new { archive.Id});
     }
-
-    public Archive? GetById(Guid id)
-    {
-        using var connection = CreateConnection();
-        var sql = @"
-            SELECT * FROM Archives WHERE Id = @Id;
-        ";
-        var archive = connection.Query<Archive>(sql, new { Id = id }).FirstOrDefault();
-
-        if (archive != null)
-        {
-            var modsSql = @"
-                SELECT m.* 
-                FROM Mods m
-                INNER JOIN ArchiveMod am ON m.Id = am.ModId
-                WHERE am.ArchiveId = @ArchiveId;
-            ";
-            archive.Mods = connection.Query<Mod>(modsSql, new { ArchiveId = archive.Id }).ToList();
-        }
-
-        return archive;
-    }
-
-    public Archive? GetByRelativePath(string relativePath)
-    {
-        using var connection = CreateConnection();
-        var sql = @"
-            SELECT * FROM Archives WHERE RelativePath = @RelativePath;
-        ";
-        var archive = connection.Query<Archive>(sql, new { RelativePath = relativePath }).FirstOrDefault();
-
-        if (archive != null)
-        {
-            var modsSql = @"
-                SELECT m.* 
-                FROM Mods m
-                INNER JOIN ArchiveMod am ON m.Id = am.ModId
-                WHERE am.ArchiveId = @ArchiveId;
-            ";
-            archive.Mods = connection.Query<Mod>(modsSql, new { ArchiveId = archive.Id }).ToList();
-        }
-
-        return archive;
-    }
 }

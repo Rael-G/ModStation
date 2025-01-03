@@ -37,8 +37,6 @@ public class BaseRepository
                 }
             }
         }
-
-        
     }
 
     public IDbConnection CreateConnection()
