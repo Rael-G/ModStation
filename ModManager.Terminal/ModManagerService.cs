@@ -5,7 +5,7 @@ namespace ModManager.Terminal;
 
 public class ModManagerService(Manager manager)
 {
-    public readonly Manager _manager = manager;
+    private readonly Manager _manager = manager;
 
     public void ManageMods(Game game)
     {
@@ -36,7 +36,7 @@ public class ModManagerService(Manager manager)
             }
             else if (choice == "Change Order")
             {
-                SwapOrderMenu(game);
+                new OrderMenu(game, _manager).Show();
             }
             else if (choice == "Back")
             {
@@ -76,7 +76,7 @@ public class ModManagerService(Manager manager)
 
         game.InstallMod(modPath, modName);
 
-        AnsiConsole.MarkupLine("[green]Mod installed and enabled successfully![/]");
+        AnsiConsole.MarkupLine($"[green]{modName} installed and enabled![/]");
     }
 
     private void ManageModActions(Mod mod)
@@ -132,114 +132,6 @@ public class ModManagerService(Manager manager)
                 AnsiConsole.Clear();
                 AnsiConsole.MarkupLine($"[green]{game.Name} has been removed![/]");
             });
-        }
-    }
-
-    private void SwapOrderMenu(Game game)
-    {
-        if (!game.Mods.Any())
-        {
-            AnsiConsole.MarkupLine("[red]No mods available to adjust the order.[/]");
-            return;
-        }
-
-        int currentIndex = 0;
-        var orderedMods = game.Mods.OrderBy(m => m.Order).ToList();
-
-        while (true)
-        {
-            AnsiConsole.Clear();
-            var table = new Table()
-                .Border(TableBorder.Minimal)
-                .AddColumns("Order", "Name");
-
-            foreach (var m in orderedMods.Select((m, index) => new { m, index }))
-            {
-                string orderText = (m.index + 1).ToString();
-                string modName = m.m.Name;
-
-                if (m.index == currentIndex)
-                {
-                    table.AddRow($"[blue]{orderText}[/]", $"[blue]{modName}[/]");
-                }
-                else
-                {
-                    table.AddRow(orderText, modName);
-                }
-            }
-
-            AnsiConsole.Write(table);
-            AnsiConsole.MarkupLine("\n[gray]Use the ↑ ↓ arrow keys to adjust the position and press Enter to confirm.[/]");
-
-            var key = Console.ReadKey(true).Key;
-
-            if (key == ConsoleKey.UpArrow && currentIndex > 0)
-            {
-                currentIndex--;
-            }
-            else if (key == ConsoleKey.DownArrow && currentIndex < orderedMods.Count - 1)
-            {
-                currentIndex++;
-            }
-            else if (key == ConsoleKey.Enter)
-            {
-                var mod = orderedMods[currentIndex];
-                int selectedOrder = mod.Order;
-
-                while (true)
-                {
-                    AnsiConsole.Clear();
-                    var tableInMove = new Table()
-                        .Border(TableBorder.Minimal)
-                        .AddColumns("Order", "Name");
-
-                    foreach (var m in orderedMods.Select((m, index) => new { m, index }))
-                    {
-                        string orderText = (m.index + 1).ToString();
-                        string modName = m.m.Name;
-
-                        if (m.index == currentIndex)
-                        {
-                            tableInMove.AddRow($"[green]{orderText}[/]", $"[green]{modName}[/]");
-                        }
-                        else
-                        {
-                            tableInMove.AddRow(orderText, modName);
-                        }
-                    }
-
-                    AnsiConsole.Write(tableInMove);
-                    AnsiConsole.MarkupLine("\n[gray]Use the ↑ ↓ arrow keys to adjust the position and press Enter to confirm the new position.[/]");
-
-                    key = Console.ReadKey(true).Key;
-
-                    if (key == ConsoleKey.UpArrow && currentIndex > 0)
-                    {
-                        var temp = orderedMods[currentIndex];
-                        orderedMods[currentIndex] = orderedMods[currentIndex - 1];
-                        orderedMods[currentIndex - 1] = temp;
-                        currentIndex--;
-                    }
-                    else if (key == ConsoleKey.DownArrow && currentIndex < orderedMods.Count - 1)
-                    {
-                        var temp = orderedMods[currentIndex];
-                        orderedMods[currentIndex] = orderedMods[currentIndex + 1];
-                        orderedMods[currentIndex + 1] = temp;
-                        currentIndex++;
-                    }
-                    else if (key == ConsoleKey.Enter)
-                    {
-                        AnsiConsole.Status().Start("Adjusting mod order...", ctx =>
-                        {
-                            var modToMove = orderedMods[currentIndex];
-                            game.SwapOrder(modToMove, currentIndex + 1); 
-                            _manager.Save();
-                        });
-                        AnsiConsole.MarkupLine($"[green]The order of mod [blue]{orderedMods[currentIndex].Name}[/] was successfully adjusted to position {currentIndex + 1}![/]");
-                        return;
-                    }
-                }
-            }
         }
     }
 }
