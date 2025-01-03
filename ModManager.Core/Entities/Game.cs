@@ -102,9 +102,26 @@ public class Game
     public void RemoveGame()
     {
         UninstallAllMods();
+        RestoreBackup();
         ClearArchives();
         DeleteDirectories();
         InjectorService.GamesRepository.Delete(this);
+    }
+
+    private void RestoreBackup()
+    {
+        foreach (var archive in Archives)
+        {
+            if (File.Exists(archive.TargetPath))
+            {
+                File.Delete(archive.TargetPath);
+            } 
+                
+            if (!string.IsNullOrEmpty(archive.BackupPath) && File.Exists(archive.BackupPath))
+            {
+                File.Copy(archive.BackupPath, archive.TargetPath, overwrite: true);
+            }
+        }
     }
 
     private void UninstallAllMods()

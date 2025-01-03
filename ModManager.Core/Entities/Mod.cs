@@ -57,7 +57,8 @@ public class Mod
             if (!IsOverwrittenByLowerOrderMod(archive))
             {
                 EnsureTargetDirectoryExists(archive.TargetPath);
-                File.Copy(archive.ModPath(this), archive.TargetPath, overwrite: true);
+                DeleteFileIfExists(archive.TargetPath);
+                File.CreateSymbolicLink(archive.TargetPath, archive.ModPath(this));
             }
         }
 
@@ -74,10 +75,12 @@ public class Mod
         {
             DeleteFileIfExists(archive.TargetPath);
 
+            DeleteFileIfExists(archive.TargetPath);
+
             string replacementFile = GetReplacementFilePath(archive);
             if (!string.IsNullOrEmpty(replacementFile) && File.Exists(replacementFile))
             {
-                File.Copy(replacementFile, archive.TargetPath, overwrite: true);
+                File.CreateSymbolicLink(archive.TargetPath, replacementFile);
             }
         }
     }

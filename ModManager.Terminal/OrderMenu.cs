@@ -61,7 +61,7 @@ public class OrderMenu(Game game, Manager manager)
         }
 
         AnsiConsole.Write(table);
-        AnsiConsole.MarkupLine("\n[gray]Use the ↑ ↓ arrow keys to adjust the position, press Enter to confirm and Escape do finish.[/]");
+        AnsiConsole.MarkupLine("\n[gray]Use the ↑ ↓ arrow keys to adjust the position, Enter to confirm and Escape do finish.[/]");
     }
 
     private void HandleKeyPress(ConsoleKey key)
@@ -140,7 +140,7 @@ public class OrderMenu(Game game, Manager manager)
             _manager.Save();
         });
 
-        AnsiConsole.MarkupLine($"[green]The order of mod [blue]{_orderedMods[_currentIndex].Name}[/] was adjusted to position {_currentIndex + 1}![/]");
+        AnsiConsole.MarkupLine($"[green]The order of [blue]{_orderedMods[_currentIndex].Name}[/] was adjusted to position {_currentIndex + 1}![/]");
     }
 }
 

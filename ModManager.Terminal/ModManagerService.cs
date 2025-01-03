@@ -139,7 +139,7 @@ public class ModManagerService(Manager manager)
 
     private void RemoveGame(Game game)
     {
-        var confirm = AnsiConsole.Confirm("[red]This action will remove all mods from [blue]" + game.Name + "[/]. Are you sure?[/]", false);
+        var confirm = AnsiConsole.Confirm("[red]This action will remove all mods from [blue]" + game.Name + "[/] and restore the original files. Do you want to continue?[/]", false);
         if (confirm)
         {
             AnsiConsole.Clear();
