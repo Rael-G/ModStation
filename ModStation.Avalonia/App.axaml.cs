@@ -1,15 +1,19 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
-using System.Linq;
 using Avalonia.Markup.Xaml;
 using ModStation.Avalonia.ViewModels;
 using ModStation.Avalonia.Views;
+using Microsoft.Extensions.DependencyInjection;
+using ModManager;
+using ModManager.Core.Services;
 
 namespace ModStation.Avalonia;
 
 public partial class App : Application
 {
+    public static IServiceProvider Services { get; private set; } = null!;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -19,13 +23,19 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSingleton(new Manager(InjectorService.GamesRepository.GetAll().ToList()));
+
+            Services = serviceCollection.BuildServiceProvider();
+
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
-            };
+                DataContext = new MainWindowViewModel(Services.GetRequiredService<Manager>()),
+            };            
         }
 
         base.OnFrameworkInitializationCompleted();
