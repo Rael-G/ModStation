@@ -9,8 +9,6 @@ namespace ModStation.Avalonia.Views;
 
 public partial class ManageModsView : UserControl
 {
-    //public Mod? SelectedMod => listBox.SelectedItem as Mod;
-    
     public ManageModsView()
     {
         InitializeComponent();

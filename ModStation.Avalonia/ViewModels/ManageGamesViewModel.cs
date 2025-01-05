@@ -6,6 +6,7 @@ using ModManager;
 using System.Linq;
 using ModManager.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ModStation.Avalonia.ViewModels
 {
@@ -13,18 +14,15 @@ namespace ModStation.Avalonia.ViewModels
     {
         private readonly Manager _manager;
         
-        private ObservableCollection<Game> _games = null!;
+        public ObservableCollection<Game> Games { get; set; }
 
-        public ObservableCollection<Game> Games
-        {
-            get => _games;
-            set => SetProperty(ref _games, value);
-        }
+        [ObservableProperty]
+        private Game? _selectedGame;
 
         public ManageGamesViewModel(Manager manager)
         {
             _manager = manager;
-            Games = new ObservableCollection<Game>(_manager.Games);
+            Games = new(_manager.Games);
         }
 
         [RelayCommand]

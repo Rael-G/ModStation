@@ -1,13 +1,8 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Converters;
-using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using ModManager;
 using ModManager.Core.Entities;
 using ModManager.Core.Exceptions;
