@@ -54,7 +54,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
             }
             catch (DuplicatedEntityException e)
             {
-                // Handle error (e.g., show a message box)
+                Console.WriteLine(e.Message);
             }
         }
     }
@@ -66,34 +66,30 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
     }
 
     [RelayCommand]
-    public void Back()
+    public void ToggleMod(Mod mod)
     {
-        App.Services.GetRequiredService<MainWindowViewModel>().WindowPop();
-    }
-}
+        if (mod.IsEnable)
+        {
+            mod.Disable();
+        }
+        else
+        {
+            mod.Enable();
+        }
 
-public class BoolToColorConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        return (bool)value ? Brushes.Green : Brushes.Red;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class EnableStatusConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        return (bool)value ? "(Enabled)" : "(Disabled)";
+        var index = Mods.IndexOf(mod);
+        if (index >= 0)
+        {
+            Mods[index] = mod;
+        }
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    [RelayCommand]
+    public void UninstallMod(Mod mod)
     {
-        throw new NotImplementedException();
+        mod.Game.UninstallMod(mod);
+        Mods.Remove(mod);
     }
+
+    
 }

@@ -13,7 +13,7 @@ namespace ModStation.Avalonia.ViewModels
     {
         private readonly Manager _manager;
         
-        private ObservableCollection<Game> _games;
+        private ObservableCollection<Game> _games = null!;
 
         public ObservableCollection<Game> Games
         {
@@ -59,7 +59,7 @@ namespace ModStation.Avalonia.ViewModels
         {
             if (game != null)
             {
-                App.Services.GetRequiredService<MainWindowViewModel>().WindowPush(new ManageModsViewModel(game, _manager));
+                App.Services.GetRequiredService<MainWindowViewModel>().CurrentView = new ManageModsViewModel(game, _manager);
             }
         }
 

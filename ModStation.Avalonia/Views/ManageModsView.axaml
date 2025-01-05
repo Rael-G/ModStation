@@ -3,35 +3,47 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ModStation.Avalonia.ViewModels"
-             xmlns:local="using:ModStation.Avalonia.ViewModels"
+             xmlns:sr="using:ModStation.Avalonia.StaticResources"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ModStation.Avalonia.Views.ManageModsView"
              x:DataType="vm:ManageModsViewModel">
     <UserControl.Resources>
-        <local:BoolToColorConverter x:Key="BoolToColorConverter" />
-        <local:EnableStatusConverter x:Key="EnableStatusConverter" />
+        <sr:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <sr:EnableStatusConverter x:Key="EnableStatusConverter" />
+        <sr:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+
     </UserControl.Resources>
 
   <Grid RowDefinitions="Auto,*,Auto" Margin="10">
         <TextBlock Text="{Binding GameName}" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
         <ListBox Grid.Row="1"
+                 x:Name="listBox"
                  ItemsSource="{Binding Mods}"
                  SelectedItem="{Binding SelectedMod}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="{Binding Name}" Foreground="{Binding IsEnable, Converter={StaticResource BoolToColorConverter}}"/>
+                        <TextBlock Text="{Binding Name}" Foreground="{Binding IsEnable, Converter={StaticResource BoolToColorConverter}}" />
                         <TextBlock Text="{Binding IsEnable, Converter={StaticResource EnableStatusConverter}}"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
+            <ListBox.ContextMenu>
+                <ContextMenu IsVisible="{Binding SelectedMod, Converter={StaticResource NullToVisibilityConverter}}">
+                    <MenuItem Header="{Binding SelectedMod.IsEnable, Converter={StaticResource EnableStatusConverter}, ConverterParameter=Inverse}" 
+                            Command="{Binding ((vm:ManageModsViewModel)DataContext).ToggleModCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
+                            CommandParameter="{Binding SelectedMod}" />
+                    <MenuItem Header="Uninstall Mod"
+                            Command="{Binding ((vm:ManageModsViewModel)DataContext).UninstallModCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
+                            CommandParameter="{Binding SelectedMod}" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
         </ListBox>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
             <Button Content="Install Mod" Command="{Binding InstallModCommand}" />
             <Button Content="Change Order" Command="{Binding ChangeOrderCommand}" />
-            <Button Content="Back" Command="{Binding BackCommand}" />
         </StackPanel>
     </Grid>
 </UserControl>

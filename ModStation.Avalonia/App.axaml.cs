@@ -27,6 +27,7 @@ public partial class App : Application
 
             serviceCollection.AddSingleton(new Manager(InjectorService.GamesRepository.GetAll().ToList()));
             serviceCollection.AddSingleton<MainWindowViewModel>();
+            serviceCollection.AddSingleton<ManageGamesViewModel>();
 
             Services = serviceCollection.BuildServiceProvider();
 
