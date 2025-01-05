@@ -15,22 +15,8 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto, *, Auto"
-          x:Name="Root">
-
-        <!-- This is our title text block.  -->
-        <TextBlock Text="Game Manager" />
-
-        <ScrollViewer Grid.Row="1">
-            <!-- This ItemsControl show all added ToDoItems. -->
-            <!-- It needs to be placed inside a ScrollViewer because other than a ListBox it has not its own -->
-            <ItemsControl ItemsSource="{Binding GameList}">
-            </ItemsControl>
-        </ScrollViewer>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-            <Button Content="Add Game" Command="{Binding AddGameCommand}" Width="100"/>
-        </StackPanel>
+    <Grid>
+        <ContentControl Content="{Binding CurrentView}" />
     </Grid>
-
+    
 </Window>

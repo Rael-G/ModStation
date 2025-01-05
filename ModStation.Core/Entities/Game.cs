@@ -48,7 +48,7 @@ public class Game
         Directory.CreateDirectory(ModsPath);
     }
 
-    public void InstallMod(string archiveFilePath, string modName)
+    public Mod InstallMod(string archiveFilePath, string modName)
     {
         ValidatePath(archiveFilePath);
 
@@ -78,6 +78,8 @@ public class Game
 
         Mods.Add(mod);
         mod.Install();
+        
+        return mod;
     }
 
     public void UninstallMod(Mod mod)

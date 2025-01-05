@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ModStation.Avalonia.ViewModels"
+             xmlns:local="using:ModStation.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ModStation.Avalonia.Views.ManageModsView"
+             x:DataType="vm:ManageModsViewModel">
+    <UserControl.Resources>
+        <local:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <local:EnableStatusConverter x:Key="EnableStatusConverter" />
+    </UserControl.Resources>
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+        <TextBlock Text="{Binding GameName}" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding Mods}"
+                 SelectedItem="{Binding SelectedMod}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding Name}" Foreground="{Binding IsEnable, Converter={StaticResource BoolToColorConverter}}"/>
+                        <TextBlock Text="{Binding IsEnable, Converter={StaticResource EnableStatusConverter}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+            <Button Content="Install Mod" Command="{Binding InstallModCommand}" />
+            <Button Content="Change Order" Command="{Binding ChangeOrderCommand}" />
+            <Button Content="Back" Command="{Binding BackCommand}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -26,6 +26,7 @@ public partial class App : Application
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddSingleton(new Manager(InjectorService.GamesRepository.GetAll().ToList()));
+            serviceCollection.AddSingleton<MainWindowViewModel>();
 
             Services = serviceCollection.BuildServiceProvider();
 
@@ -34,7 +35,7 @@ public partial class App : Application
             DisableAvaloniaDataAnnotationValidation();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(Services.GetRequiredService<Manager>()),
+                DataContext = Services.GetRequiredService<MainWindowViewModel>(),
             };            
         }
 

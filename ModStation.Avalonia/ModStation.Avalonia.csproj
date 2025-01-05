@@ -31,4 +31,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ModStation.Core\ModStation.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\ManageGamesView.axaml.cs">
+      <DependentUpon>ManageGamesView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

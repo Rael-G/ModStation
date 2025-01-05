@@ -1,9 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ModManager;
+using System;
+using CommunityToolkit.Mvvm.ComponentModel;
+using ModStation.Avalonia.ViewModels;
 
-namespace ModStation.Avalonia.ViewModels;
+namespace ModStation.Avalonia;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class WindowManager : ObservableObject
 {
     [ObservableProperty]
     private ViewModelBase _currentView;
@@ -26,10 +27,5 @@ public partial class MainWindowViewModel : ViewModelBase
         var vm = WindowStack.Pop();
         CurrentView = WindowStack.Peek();
         return vm;
-    }
-
-    public MainWindowViewModel(Manager manager)
-    {
-        WindowPush(new ManageGamesViewModel(manager));
     }
 }
