@@ -16,6 +16,8 @@ public class Game
     public ModList Mods { get; set; } = [];
     public List<Archive> Archives { get; set; } = [];
 
+    public string BasePath => Path.Combine(GamePath, "ModStation");
+
     // Primary constructor
     public Game(string gamePath, string name)
     {
@@ -42,8 +44,8 @@ public class Game
 
     private void InitializePaths()
     {
-        BackupPath = Path.Combine(GamePath, "ModStation", "Backup");
-        ModsPath = Path.Combine(GamePath, "ModStation", "Mods");
+        BackupPath = Path.Combine(BasePath, "Backup");
+        ModsPath = Path.Combine(BasePath, "Mods");
         Directory.CreateDirectory(BackupPath);
         Directory.CreateDirectory(ModsPath);
     }
@@ -150,8 +152,7 @@ public class Game
 
     private void DeleteDirectories()
     {
-        if (Directory.Exists(BackupPath)) Directory.Delete(BackupPath, recursive: true);
-        if (Directory.Exists(ModsPath)) Directory.Delete(ModsPath, recursive: true);
+        if (Directory.Exists(BasePath)) Directory.Delete(BasePath, recursive: true);
     }
 
     private static void ValidatePath(string path)
