@@ -9,7 +9,7 @@ namespace ModManager.Core.Entities;
 public class Game
 {
     public string Id { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; set; }
     public string GamePath { get; private set; }
     public string BackupPath { get; private set; }
     public string ModsPath { get; private set; }

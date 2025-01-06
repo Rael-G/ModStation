@@ -18,37 +18,40 @@
 
     <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto" Margin="10">
 
-    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-               Text="Game Manager"
-               FontSize="24"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Margin="0,10"/>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                Text="Game Manager"
+                FontSize="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="0,10"/>
 
-    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-        <Button Content="Add Game" Command="{Binding AddGameCommand}" Width="150"/>
-    </StackPanel>
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+            <Button Content="Add Game" Command="{Binding AddGameCommand}" Width="150"/>
+        </StackPanel>
 
-    <ListBox Grid.Row="1" Grid.Column="0"
-             ItemsSource="{Binding Games}"
-             SelectedItem="{Binding SelectedGame}">
-        <ListBox.ItemTemplate>
-            <DataTemplate>
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                </StackPanel>
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-        <ListBox.ContextMenu>
-            <ContextMenu IsVisible="{Binding SelectedGame, Converter={StaticResource NullToVisibilityConverter}}">
-                <MenuItem Header="Manage Mods"
-                          Command="{Binding ((vm:ManageGamesViewModel)DataContext).OpenManageModsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                          CommandParameter="{Binding SelectedGame}"/>
-                <MenuItem Header="Remove Game"
-                          Command="{Binding ((vm:ManageGamesViewModel)DataContext).RemoveGameCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                          CommandParameter="{Binding SelectedGame}"/>
-            </ContextMenu>
-        </ListBox.ContextMenu>
-    </ListBox>
-</Grid>
+        <ListBox Grid.Row="1" Grid.Column="0"
+                ItemsSource="{Binding Games}"
+                SelectedItem="{Binding SelectedGame}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ContextMenu>
+                <ContextMenu IsVisible="{Binding SelectedGame, Converter={StaticResource NullToVisibilityConverter}}">
+                    <MenuItem Header="Manage Mods"
+                            Command="{Binding ((vm:ManageGamesViewModel)DataContext).OpenManageModsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding SelectedGame}"/>
+                    <MenuItem Header="Rename Game"
+                            Command="{Binding ((vm:ManageGamesViewModel)DataContext).RenameGameCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding SelectedGame}"/>
+                    <MenuItem Header="Remove Game"
+                            Command="{Binding ((vm:ManageGamesViewModel)DataContext).RemoveGameCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding SelectedGame}"/>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+        </ListBox>
+    </Grid>
 </UserControl>

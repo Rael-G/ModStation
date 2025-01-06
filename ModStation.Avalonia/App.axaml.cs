@@ -13,6 +13,8 @@ namespace ModStation.Avalonia;
 public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
+    
+    public static MainWindow MainWindow { get; set; } = null!;
 
     public override void Initialize()
     {
@@ -34,10 +36,13 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
+
+            MainWindow = new MainWindow
             {
                 DataContext = Services.GetRequiredService<MainWindowViewModel>(),
-            };            
+            };
+            desktop.MainWindow = MainWindow;
+
         }
 
         base.OnFrameworkInitializationCompleted();
