@@ -28,8 +28,17 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding Order}" Margin="5"/>
                         <TextBlock Text="{Binding Name}" Foreground="{Binding IsEnable, Converter={StaticResource BoolToColorConverter}}" />
                         <TextBlock Text="{Binding IsEnable, Converter={StaticResource EnableStatusConverter}}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                            <Button Content="Move Up" 
+                                Command="{Binding ((vm:ManageModsViewModel)DataContext).MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="10"
+                                CommandParameter="{Binding}"/>
+                            <Button Content="Move Down" 
+                                Command="{Binding ((vm:ManageModsViewModel)DataContext).MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="10"
+                                CommandParameter="{Binding}"/>
+                        </StackPanel>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -47,7 +56,6 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
             <Button Content="Install Mod" Command="{Binding InstallModCommand}" />
-            <Button Content="Change Order" Command="{Binding ChangeOrderCommand}" />
         </StackPanel>
     </Grid>
 </UserControl>

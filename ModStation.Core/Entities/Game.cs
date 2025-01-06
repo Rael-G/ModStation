@@ -96,9 +96,13 @@ public class Game
 
     public void SwapOrder(Mod mod, int order)
     {
-        mod.Disable();
+        var enabled = mod.IsEnable;
+
+        if (enabled) mod.Disable();
+
         Mods.AddAtIndex(mod, order);
-        mod.Enable();
+        
+        if (enabled) mod.Enable();
     }
 
     public void RemoveGame()

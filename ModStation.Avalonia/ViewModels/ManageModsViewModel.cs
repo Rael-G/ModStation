@@ -6,15 +6,17 @@ using CommunityToolkit.Mvvm.Input;
 using ModManager;
 using ModManager.Core.Entities;
 using ModManager.Core.Exceptions;
+using ModStation.Avalonia.Extensions;
+using ModStation.Avalonia.Views;
 
 namespace ModStation.Avalonia.ViewModels;
 
 public partial class ManageModsViewModel(Game game, Manager manager) : ViewModelBase
 {
-    private readonly Manager _manager = manager;
     private readonly Game _game = game;
+    private readonly Manager _manager = manager;
 
-    public string GameName => game.Name;
+    public string GameName => _game.Name;
 
     public ObservableCollection<Mod> Mods { get; set; } = new(game.Mods);
 
@@ -44,7 +46,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
 
             try
             {
-                var mod = game.InstallMod(modPath, modName);
+                var mod = _game.InstallMod(modPath, modName);
                 Mods.Add(mod);
             }
             catch (DuplicatedEntityException e)
@@ -52,12 +54,8 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 Console.WriteLine(e.Message);
             }
         }
-    }
 
-    [RelayCommand]
-    public void ChangeOrder()
-    {
-        // Open a dialog or navigate to an order management page
+        _manager.Save();
     }
 
     [RelayCommand]
@@ -72,11 +70,8 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
             mod.Enable();
         }
 
-        var index = Mods.IndexOf(mod);
-        if (index >= 0)
-        {
-            Mods[index] = mod;
-        }
+        Mods.Refresh(mod);
+        _manager.Save();
     }
 
     [RelayCommand]
@@ -84,7 +79,37 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
     {
         mod.Game.UninstallMod(mod);
         Mods.Remove(mod);
+        _manager.Save();
     }
 
+    [RelayCommand]
+    private void MoveUp(Mod mod)
+    {
+        var index = Mods.IndexOf(mod);
+        if (index > 0)
+        {
+            var temp = Mods[index - 1];
+            Mods[index - 1] = mod;
+            Mods[index] = temp;
+        }
+        _game.SwapOrder(mod, index - 1);
+        Mods.Refresh(mod);
+        _manager.Save();
+    }
+
+    [RelayCommand]
+    private void MoveDown(Mod mod)
+    {
+        var index = Mods.IndexOf(mod);
+        if (index < Mods.Count - 1)
+        {
+            var temp = Mods[index + 1];
+            Mods[index + 1] = mod;
+            Mods[index] = temp;
+        }
+        _game.SwapOrder(mod, index + 1);
+        Mods.Refresh(mod);
+        _manager.Save();
+    }
     
 }
