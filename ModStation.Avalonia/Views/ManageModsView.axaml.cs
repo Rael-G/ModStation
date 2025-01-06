@@ -22,4 +22,15 @@ public partial class ManageModsView : UserControl
             ((ManageModsViewModel)DataContext!).ToggleModCommand.Execute(mod); 
         }
     }
+
+    private void ListBoxItem_MouseDoubleClick(object sender, PointerPressedEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            var grid = sender as Grid;
+            var mod = grid?.DataContext as Mod;
+            var dataContext = DataContext as ManageModsViewModel;
+            dataContext?.ToggleMod(mod);
+        }
+    }
 }

@@ -30,7 +30,7 @@
                  SelectedItem="{Binding SelectedMod}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
+                    <Grid PointerPressed="ListBoxItem_MouseDoubleClick" Background="transparent">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
