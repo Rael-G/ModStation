@@ -35,7 +35,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
 
         var selectedFile = await mainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Select Mod Path",
+            Title = "Select Mod",
             AllowMultiple = false
         });
 
@@ -44,14 +44,25 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
             var modPath = selectedFile[0].Path.LocalPath;
             var modName = Path.GetFileNameWithoutExtension(modPath);
 
-            try
+            var modNameDialog = new EnterNameDialog()
             {
-                var mod = _game.InstallMod(modPath, modName);
-                Mods.Add(mod);
-            }
-            catch (DuplicatedEntityException e)
+                NameText = modName
+            };
+
+            var result = await modNameDialog.ShowDialog<bool>(App.MainWindow);
+            modName = modNameDialog.NameText;
+
+            if (result && !string.IsNullOrEmpty(modName))
             {
-                Console.WriteLine(e.Message);
+                try
+                {
+                    var mod = _game.InstallMod(modPath, modName);
+                    Mods.Add(mod);
+                }
+                catch (DuplicatedEntityException e)
+                {
+                    Console.WriteLine($"Duplicated game: {e.Message}");
+                }
             }
         }
 
@@ -110,6 +121,23 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
         _game.SwapOrder(mod, index + 1);
         Mods.Refresh(mod);
         _manager.Save();
+    }
+
+    [RelayCommand]
+    public async Task RenameMod(Mod mod)
+    {
+        var modNameDialog = new EnterNameDialog()
+        {
+            NameText = mod.Name
+        };
+
+        var result = await modNameDialog.ShowDialog<bool>(App.MainWindow);
+        if (result)
+        {
+            mod.Name = modNameDialog.NameText;   
+            _manager.Save();
+            Mods.Refresh(mod);
+        }
     }
     
 }

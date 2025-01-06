@@ -62,7 +62,6 @@ namespace ModStation.Avalonia.ViewModels
                         }
                         catch (DuplicatedEntityException e)
                         {
-                            // Exibe mensagem de erro (pode ser um Toast ou MessageBox no futuro)
                             Console.WriteLine($"Duplicated game: {e.Message}");
                         }
                     }

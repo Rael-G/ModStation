@@ -5,7 +5,7 @@ namespace ModManager.Core.Entities;
 public class Mod
 {
     public string Id { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; set; }
     public string ModPath { get; private set; }
     public Game Game { get; set; }
     public List<Archive> Archives { get; set; }
