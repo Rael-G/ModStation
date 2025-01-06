@@ -13,7 +13,7 @@ public class EnableStatusConverter : IValueConverter
         {
             if (format == "EnableDisable")
             {
-                return isEnabled ? "Enable" : "Disable";
+                return !isEnabled ? "Enable" : "Disable";
             }
             else if (format == "EnabledDisabled")
             {
@@ -21,7 +21,7 @@ public class EnableStatusConverter : IValueConverter
             }
         }
 
-        return isEnabled ? "Enable" : "Disable";
+        return !isEnabled ? "Enable" : "Disable";
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
