@@ -30,9 +30,9 @@
                 SelectedItem="{Binding SelectedGame}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Grid PointerPressed="ListBoxItem_MouseDoubleClick" Background="transparent">
                         <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ContextMenu>
