@@ -5,12 +5,26 @@ namespace ModStation.Avalonia.StaticResources;
 
 public class EnableStatusConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return (bool)value ? "Enabled" : "Disabled";
+        bool isEnabled = (bool)value!;
+
+        if (parameter is string format)
+        {
+            if (format == "EnableDisable")
+            {
+                return isEnabled ? "Enable" : "Disable";
+            }
+            else if (format == "EnabledDisabled")
+            {
+                return isEnabled ? "Enabled" : "Disabled";
+            }
+        }
+
+        return isEnabled ? "Enable" : "Disable";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

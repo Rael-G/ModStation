@@ -27,19 +27,31 @@
                  SelectedItem="{Binding SelectedMod}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="{Binding Order}" Margin="5"/>
-                        <TextBlock Text="{Binding Name}" Foreground="{Binding IsEnable, Converter={StaticResource BoolToColorConverter}}" />
-                        <TextBlock Text="{Binding IsEnable, Converter={StaticResource EnableStatusConverter}}"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                            <Button Content="Move Up" 
-                                Command="{Binding ((vm:ManageModsViewModel)DataContext).MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="10"
-                                CommandParameter="{Binding}"/>
-                            <Button Content="Move Down" 
-                                Command="{Binding ((vm:ManageModsViewModel)DataContext).MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="10"
-                                CommandParameter="{Binding}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Text="{Binding Order}" Margin="5" Grid.Column="0"/>
+
+                        <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" Margin="5"/>
+
+                        <TextBlock Text="{Binding IsEnable, Converter={StaticResource EnableStatusConverter}, ConverterParameter=EnabledDisabled}" 
+                                Foreground="{Binding IsEnable, Converter={StaticResource BoolToColorConverter}}"
+                                Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="3" Margin="5">
+                            <Button Content="↑" 
+                                    Command="{Binding ((vm:ManageModsViewModel)DataContext).MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    CommandParameter="{Binding}" Margin="3" Padding="5,0"/>
+                            <Button Content="↓" 
+                                    Command="{Binding ((vm:ManageModsViewModel)DataContext).MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                    CommandParameter="{Binding}" Margin="3" Padding="5,0"/>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ContextMenu>
