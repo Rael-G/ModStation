@@ -10,12 +10,4 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
-
-    private void Games_PointerPressed(object sender, PointerPressedEventArgs e)
-{
-    if (sender is TextBlock textBlock) 
-    {
-        ((MainWindowViewModel)DataContext!).OpenGamesView(); 
-    }
-}
 }

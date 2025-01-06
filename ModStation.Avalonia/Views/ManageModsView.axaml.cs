@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using ModManager.Core.Entities;
 using ModStation.Avalonia.ViewModels;
@@ -14,7 +15,6 @@ public partial class ManageModsView : UserControl
         InitializeComponent();
     }
 
-    
     private void ModEnable_PointerPressed(object sender, PointerPressedEventArgs e)
     {
         if (sender is TextBlock textBlock && textBlock.DataContext is Mod mod) 
