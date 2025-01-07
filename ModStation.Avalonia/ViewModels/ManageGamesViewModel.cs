@@ -62,7 +62,7 @@ namespace ModStation.Avalonia.ViewModels
                         }
                         catch (DuplicatedEntityException e)
                         {
-                            Console.WriteLine($"Duplicated game: {e.Message}");
+                            Console.WriteLine($"Duplicated name: {e.Message}");
                         }
                     }
                 }
@@ -109,9 +109,16 @@ namespace ModStation.Avalonia.ViewModels
             var result = await gameNameDialog.ShowDialog<bool>(App.MainWindow);
             if (result)
             {
-                game.Name = gameNameDialog.NameText;   
-                _manager.Save();
-                Games.Refresh(game);
+                try
+                {
+                    game.Name = gameNameDialog.NameText;   
+                    _manager.Save();
+                    Games.Refresh(game);
+                }
+                catch (DuplicatedEntityException e)
+                {
+                    Console.WriteLine($"Duplicated name: {e.Message}");
+                }
             }
         }
     }

@@ -197,9 +197,17 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
         var result = await modNameDialog.ShowDialog<bool>(App.MainWindow);
         if (result)
         {
-            mod.Name = modNameDialog.NameText;   
-            _manager.Save();
-            Mods.Refresh(mod);
+            try
+            {
+                mod.Name = modNameDialog.NameText;   
+                _manager.Save();
+                Mods.Refresh(mod); 
+            }
+            catch (DuplicatedEntityException e)
+            {
+                Console.WriteLine($"Duplicated name: {e.Message}");
+            }
+            
         }
     }
     
