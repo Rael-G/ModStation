@@ -17,7 +17,7 @@ public class EnableStatusConverter : IValueConverter
             }
             else if (format == "EnabledDisabled")
             {
-                return isEnabled ? "Enabled" : "Disabled";
+                return isEnabled ? "✔" : "❌";
             }
         }
 
