@@ -127,7 +127,7 @@ public class Game
                 
             if (!string.IsNullOrEmpty(archive.BackupPath) && File.Exists(archive.BackupPath))
             {
-                File.Copy(archive.BackupPath, archive.TargetPath, overwrite: true);
+                File.Move(archive.BackupPath, archive.TargetPath, overwrite: true);
             }
         }
     }
@@ -163,7 +163,7 @@ public class Game
         }
     }
 
-    private static void CopyDirectory(string sourcePath, string targetPath)
+    private static void MoveDirectory(string sourcePath, string targetPath)
     {
         foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
         {
@@ -173,7 +173,7 @@ public class Game
         foreach (var filePath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
         {
             var targetFilePath = Path.Combine(targetPath, Path.GetRelativePath(sourcePath, filePath));
-            File.Copy(filePath, targetFilePath, overwrite: true);
+            File.Move(filePath, targetFilePath, overwrite: true);
         }
     }
 
