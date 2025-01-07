@@ -4,7 +4,7 @@ using ModStation.Core.Extensions;
 
 namespace ModManager.Core.Repositories;
 
-public class GamesRepository(string connectionString) : BaseRepository(connectionString)
+public class GameRepository(string connectionString) : BaseRepository(connectionString)
 {
     public void Create(Game game)
     {

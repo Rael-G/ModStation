@@ -3,7 +3,7 @@ using ModManager.Core.Entities;
 
 namespace ModManager.Core.Repositories;
 
-public class ArchivesRepository(string connectionString) : BaseRepository(connectionString)
+public class ArchiveRepository(string connectionString) : BaseRepository(connectionString)
 {
     public void Create(Archive archive)
     {

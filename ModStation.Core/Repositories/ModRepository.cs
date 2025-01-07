@@ -3,7 +3,7 @@ using ModManager.Core.Entities;
 
 namespace ModManager.Core.Repositories;
 
-public class ModsRepository(string connectionString) : BaseRepository(connectionString)
+public class ModRepository(string connectionString) : BaseRepository(connectionString)
 {
     public void Create(Mod mod)
     {
