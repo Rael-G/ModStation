@@ -60,7 +60,7 @@ public class Game
 
         if (Directory.Exists(archiveFilePath))
         {
-            MoveDirectory(archiveFilePath, modPath);
+            CopyDirectory(archiveFilePath, modPath);
         }
         else
         {
@@ -163,7 +163,7 @@ public class Game
         }
     }
 
-    private static void MoveDirectory(string sourcePath, string targetPath)
+    private static void CopyDirectory(string sourcePath, string targetPath)
     {
         foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
         {
@@ -173,7 +173,7 @@ public class Game
         foreach (var filePath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
         {
             var targetFilePath = Path.Combine(targetPath, Path.GetRelativePath(sourcePath, filePath));
-            File.Move(filePath, targetFilePath, overwrite: true);
+            File.Copy(filePath, targetFilePath, overwrite: true);
         }
     }
 
