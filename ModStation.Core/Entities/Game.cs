@@ -60,7 +60,7 @@ public class Game
 
         if (Directory.Exists(archiveFilePath))
         {
-            CopyDirectory(archiveFilePath, modPath);
+            MoveDirectory(archiveFilePath, modPath);
         }
         else
         {
@@ -102,7 +102,7 @@ public class Game
 
         if (enabled) mod.Disable();
 
-        Mods.AddAtIndex(mod, order);
+        Mods.Insert(order, mod);
         
         if (enabled) mod.Enable();
     }

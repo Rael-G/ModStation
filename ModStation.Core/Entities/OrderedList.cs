@@ -19,69 +19,28 @@ public class ModList : List<Mod>
 {
     public new void Add(Mod mod)
     {
-        foreach (var m in this)
-        {
-            m.Order++;
-        }
-
-        mod.Order = 0;
-
-        base.Add(mod);
-
-        Sort();
+        Insert(0, mod);
     }
 
-    public new void AddAtIndex(Mod mod, int newOrder)
+    public new void Insert(int newOrder, Mod mod)
     {
-        base.Remove(mod);
+        Remove(mod);
+        base.Insert(newOrder, mod);
 
-        if (newOrder < mod.Order)
-        {
-            foreach (var m in this.Where(m => m.Order >= newOrder && m.Order < mod.Order))
-            {
-                m.Order++;
-            }
-        }
-        else if (newOrder > mod.Order)
-        {
-            foreach (var m in this.Where(m => m.Order > mod.Order && m.Order <= newOrder))
-            {
-                m.Order--;
-            }
-        }
-
-        mod.Order = newOrder;
-
-        base.Add(mod);
-
-        Sort();
+        FixOrder();
     }
 
     public new void Remove(Mod mod)
     {
         base.Remove(mod);
-
-        foreach (var m in this.Where(m => m.Order > mod.Order))
-        {
-            m.Order--;
-        }
+        FixOrder();
     }
 
-    public void Swap(int orderA, int orderB)
+    public void FixOrder()
     {
-        if (orderA >= Count || orderA < 0 || orderB >= Count || orderB < 0)
+        foreach (var mod in this)
         {
-            throw new ModManagerException("The order range is out of bounds.");
+            mod.Order = IndexOf(mod);
         }
-
-        (this[orderA], this[orderB]) = (this[orderB], this[orderA]);
-        (this[orderB].Order, this[orderA].Order) = (this[orderA].Order, this[orderB].Order);
-
-        Sort();
-    }
-
-    public new void Sort()
-    {
-        base.Sort((mod1, mod2) => mod1.Order.CompareTo(mod2.Order));
     }
 }

@@ -2,16 +2,28 @@
 
 namespace ModManager.Core.Entities;
 
-public class Mod
+public class Mod : IComparable<Mod>
 {
+    private int _order;
+
     public string Id { get; private set; }
     public string Name { get; set; }
     public string ModPath { get; private set; }
     public Game Game { get; set; }
     public List<Archive> Archives { get; set; }
     public bool IsEnable { get; private set; }
-    public int Order { get; set; }
     public string GameId { get; private set; }
+
+    public int Order 
+    { 
+        get => _order; 
+        set
+        {
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Order)} should not be less than zero.");
+            _order = value;
+        }
+    }
+
 
     public Mod(string id, string name, string modPath, Game game, List<Archive> archives, bool isEnable = false)
     {
@@ -151,5 +163,10 @@ public class Mod
         {
             File.Delete(filePath);
         }
+    }
+
+    public int CompareTo(Mod? other)
+    {
+        return Order.CompareTo(other?.Order);
     }
 }
