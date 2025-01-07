@@ -53,11 +53,11 @@ namespace ModStation.Avalonia.ViewModels
 
                     var result = await gameNameDialog.ShowDialog<bool>(mainWindow);
 
-                    if (result && !string.IsNullOrEmpty(gameNameDialog.Name))
+                    if (result && !string.IsNullOrEmpty(gameNameDialog.NameText))
                     {
                         try
                         {
-                            var game = _manager.AddGame(gamePath, gameNameDialog.Name);
+                            var game = _manager.AddGame(gamePath, gameNameDialog.NameText);
                             Games.Add(game);
                         }
                         catch (DuplicatedEntityException e)

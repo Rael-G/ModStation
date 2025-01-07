@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using ModManager.Core.Entities;
 
 namespace ModStation.Avalonia.Extensions;
 

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,16 +41,16 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
         if (mainWindow == null)
             return;
 
-        var selectedFile = await mainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Select Mod",
-            AllowMultiple = false
-        });
+        var selectedFolder = await mainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Select Mod Path",
+                AllowMultiple = false
+            });
 
-        if (selectedFile != null && selectedFile.Count > 0)
+        if (selectedFolder != null && selectedFolder.Count > 0)
         {
-            var modPath = selectedFile[0].Path.LocalPath;
-            var modName = Path.GetFileNameWithoutExtension(modPath);
+            var modPath = selectedFolder[0].Path.LocalPath;
+            var modName = Path.GetFileName(modPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 
             var modNameDialog = new EnterNameDialog()
             {
@@ -64,7 +65,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 try
                 {
                     var mod = _game.InstallMod(modPath, modName);
-                    Mods.Add(mod);
+                    Mods.Insert(0, mod);
                 }
                 catch (DuplicatedEntityException e)
                 {
@@ -109,10 +110,10 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
             var temp = Mods[index - 1];
             Mods[index - 1] = mod;
             Mods[index] = temp;
+            _game.SwapOrder(mod, index - 1);
+            Mods.Refresh(mod);
+            _manager.Save();
         }
-        _game.SwapOrder(mod, index - 1);
-        Mods.Refresh(mod);
-        _manager.Save();
     }
 
     [RelayCommand]
@@ -124,10 +125,10 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
             var temp = Mods[index + 1];
             Mods[index + 1] = mod;
             Mods[index] = temp;
+            _game.SwapOrder(mod, index + 1);
+            Mods.Refresh(mod);
+            _manager.Save();
         }
-        _game.SwapOrder(mod, index + 1);
-        Mods.Refresh(mod);
-        _manager.Save();
     }
 
     [RelayCommand]
