@@ -75,9 +75,9 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                         Mods.Insert(0, mod);
                     });
                 }
-                catch (DuplicatedEntityException e)
+                catch (Exception e)
                 {
-                    Console.WriteLine($"Duplicated game: {e.Message}");
+                    await new ErrorDialog(){ SecondDescription = e.Message }.ShowDialog<bool>(App.MainWindow);
                 }
                 finally
                 {
@@ -205,9 +205,9 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 _manager.Save();
                 Mods.Refresh(mod); 
             }
-            catch (DuplicatedEntityException e)
+            catch (Exception e)
             {
-                Console.WriteLine($"Duplicated name: {e.Message}");
+                await new ErrorDialog(){ SecondDescription = e.Message }.ShowDialog<bool>(App.MainWindow);
             }
             
         }
