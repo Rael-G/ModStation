@@ -34,9 +34,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
     [RelayCommand]
     public async Task InstallMod()
     {
-        var mainWindow = App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-            ? desktop.MainWindow
-            : null;
+        var mainWindow = App.MainWindow;
 
         if (mainWindow == null)
             return;
@@ -57,19 +55,32 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 NameText = modName
             };
 
-            var result = await modNameDialog.ShowDialog<bool>(App.MainWindow);
+            var result = await modNameDialog.ShowDialog<bool>(mainWindow);
             modName = modNameDialog.NameText;
 
             if (result && !string.IsNullOrEmpty(modName))
             {
+                var progressDialog = new ProgressDialog()
+                {
+                    Text = $"Installing {modName}",
+                };
+
+                progressDialog.Show(mainWindow);
                 try
                 {
-                    var mod = _game.InstallMod(modPath, modName);
-                    Mods.Insert(0, mod);
+                    await Task.Run( () => 
+                    {
+                        var mod = _game.InstallMod(modPath, modName);
+                        Mods.Insert(0, mod);
+                    });
                 }
                 catch (DuplicatedEntityException e)
                 {
                     Console.WriteLine($"Duplicated game: {e.Message}");
+                }
+                finally
+                {
+                    progressDialog.Close();
                 }
             }
         }
@@ -80,55 +91,99 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
     [RelayCommand]
     public void ToggleMod(Mod mod)
     {
-        if (mod.IsEnable)
-        {
-            mod.Disable();
-        }
-        else
-        {
-            mod.Enable();
-        }
+        var progressDialog = new ProgressDialog();
+        var message = mod.IsEnable ? "Enabling" : "Disabling";
+        progressDialog.Text = $"{message} {mod.Name}";
 
-        Mods.Refresh(mod);
-        _manager.Save();
+        progressDialog.Show(App.MainWindow);
+
+        Task.Run(() =>
+        {
+            if (mod.IsEnable)
+            {
+                mod.Disable();
+            }
+            else
+            {
+                mod.Enable();
+            }
+            Mods.Refresh(mod);
+            _manager.Save();
+        });
+
+        progressDialog.Close();
     }
 
     [RelayCommand]
     public void UninstallMod(Mod mod)
     {
-        mod.Game.UninstallMod(mod);
-        Mods.Remove(mod);
-        _manager.Save();
+        var progressDialog = new ProgressDialog()
+        {
+            Text = $"Unninstaling {mod.Name}",
+        };
+        progressDialog.Show(App.MainWindow);
+
+
+        Task.Run(() =>
+        {
+            mod.Game.UninstallMod(mod);
+            Mods.Remove(mod);
+            _manager.Save();
+        });
+        
+        progressDialog.Close();
     }
 
     [RelayCommand]
     private void MoveUp(Mod mod)
     {
-        var index = Mods.IndexOf(mod);
-        if (index > 0)
+        var progressDialog = new ProgressDialog()
         {
-            var temp = Mods[index - 1];
-            Mods[index - 1] = mod;
-            Mods[index] = temp;
-            _game.SwapOrder(mod, index - 1);
-            Mods.Refresh(mod);
-            _manager.Save();
-        }
+            Text = $"Moving up {mod.Name}",
+        };
+        progressDialog.Show(App.MainWindow);
+        
+        Task.Run(() =>
+        {
+            var index = Mods.IndexOf(mod);
+            if (index > 0)
+            {
+                var temp = Mods[index - 1];
+                Mods[index - 1] = mod;
+                Mods[index] = temp;
+                _game.SwapOrder(mod, index - 1);
+                Mods.Refresh(mod);
+                _manager.Save();
+            }
+        });
+        
+        progressDialog.Close();
     }
 
     [RelayCommand]
     private void MoveDown(Mod mod)
     {
-        var index = Mods.IndexOf(mod);
-        if (index < Mods.Count - 1)
+        var progressDialog = new ProgressDialog()
         {
-            var temp = Mods[index + 1];
-            Mods[index + 1] = mod;
-            Mods[index] = temp;
-            _game.SwapOrder(mod, index + 1);
-            Mods.Refresh(mod);
-            _manager.Save();
-        }
+            Text = $"Moving up {mod.Name}",
+        };
+        progressDialog.Show(App.MainWindow);
+        
+        Task.Run(() =>
+        {
+            var index = Mods.IndexOf(mod);
+            if (index < Mods.Count - 1)
+            {
+                var temp = Mods[index + 1];
+                Mods[index + 1] = mod;
+                Mods[index] = temp;
+                _game.SwapOrder(mod, index + 1);
+                Mods.Refresh(mod);
+                _manager.Save();
+            }
+        });
+        
+        progressDialog.Close();
     }
 
     [RelayCommand]

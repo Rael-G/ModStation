@@ -81,9 +81,21 @@ namespace ModStation.Avalonia.ViewModels
         [RelayCommand]
         public void RemoveGame(Game game)
         {
-            _manager.RemoveGame(game);
-            _manager.Save();
-            Games.Remove(game);
+            var progressDialog = new ProgressDialog()
+            {
+                Text = $"Removing {game.Name}",
+                Description = "Warning: Closing the program now may result in game data corruption."
+            };
+            progressDialog.Show(App.MainWindow);
+
+            Task.Run(() =>
+            {
+                _manager.RemoveGame(game);
+                _manager.Save();
+                Games.Remove(game);
+            });
+
+            progressDialog.Close();
         }
 
         [RelayCommand]
