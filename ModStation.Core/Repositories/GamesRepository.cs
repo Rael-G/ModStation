@@ -1,5 +1,6 @@
 using Dapper;
 using ModManager.Core.Entities;
+using ModStation.Core.Extensions;
 
 namespace ModManager.Core.Repositories;
 

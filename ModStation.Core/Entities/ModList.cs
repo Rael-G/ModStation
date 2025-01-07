@@ -1,19 +1,4 @@
-using ModManager.Core.Exceptions;
-
 namespace ModManager.Core.Entities;
-
-public static class ListExtensions
-{
-    public static ModList ToModList(this IEnumerable<Mod> list)
-    {
-        var modList = new ModList();
-        foreach (var mod in list.OrderByDescending(a => a.Order))
-        {
-            modList.Add(mod);
-        }
-        return modList;
-    }
-}
 
 public class ModList : List<Mod>
 {
