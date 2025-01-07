@@ -6,8 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="450"
         x:Class="ModStation.Avalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="ModStation"
+        Title="Mod Station"
         Width = "800"
         Height = "450"
         WindowStartupLocation="CenterScreen">

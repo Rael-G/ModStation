@@ -12,6 +12,12 @@ public partial class EnterNameDialog : Window
         set => NameTextBox.Text = value;
     }
 
+    public string? Description
+    {
+        get => DescriptionText.Text;
+        set => DescriptionText.Text = value;
+    }
+
     public EnterNameDialog()
     {
         InitializeComponent();

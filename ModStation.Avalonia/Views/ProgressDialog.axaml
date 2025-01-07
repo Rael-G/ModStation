@@ -33,7 +33,7 @@
                      Height="20"
                      IsIndeterminate="True"
                      Background="#555"
-                     Foreground="#5AC18E"
+                     Foreground="#5A9BD5"
                      BorderBrush="#888"
                      BorderThickness="1"
                      VerticalAlignment="Center"

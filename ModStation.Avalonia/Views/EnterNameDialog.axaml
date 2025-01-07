@@ -5,15 +5,37 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ModStation.Avalonia.Views.EnterNameDialog"
         Title="Enter Name"
-        Width = "400" Height = "150"
-        WindowStartupLocation="CenterOwner">
+        Width="400" Height="150"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        SystemDecorations="BorderOnly"
+        Background="#333333"
+        TransparencyLevelHint="Blur"
+        TransparencyBackgroundFallback="White">
 
-  <StackPanel Margin="10" Spacing="10">
-      <TextBlock Text="Enter the name:" FontSize="14" />
-      <TextBox x:Name="NameTextBox" Watermark="Name..." />
+  <StackPanel Margin="20" Spacing="15">
+      <!-- Título do campo de entrada -->
+      <TextBlock Name="DescriptionText" 
+                Text="" 
+                FontSize="16" 
+                FontWeight="Bold" 
+                Foreground="White" 
+                HorizontalAlignment="Center" />
+
+      <!-- Caixa de texto para o nome -->
+      <TextBox Name="NameTextBox" 
+               Watermark="Enter your name..." 
+               Background="#555" 
+               Foreground="White" 
+               BorderBrush="#888" 
+               BorderThickness="1" 
+               FontSize="14" 
+               Padding="5" />
+
+      <!-- Botões de ação -->
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-          <Button Content="OK" Width="75" IsDefault="True" Click="OnOkClick" />
-          <Button Content="Cancel" Width="75" IsCancel="True" Click="OnCancelClick" />
+          <Button Content="OK" Width="80" Height="35" IsDefault="True" Click="OnOkClick" Background="#5A9BD5" Foreground="White" BorderBrush="#3C7AB3" BorderThickness="1" />
+          <Button Content="Cancel" Width="80" Height="35" IsCancel="True" Click="OnCancelClick" Background="#888" Foreground="White" BorderBrush="#666" BorderThickness="1" />
       </StackPanel>
   </StackPanel>
 

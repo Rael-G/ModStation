@@ -52,7 +52,8 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
 
             var modNameDialog = new EnterNameDialog()
             {
-                NameText = modName
+                NameText = modName,
+                Description = "Enter the mod name:"
             };
 
             var result = await modNameDialog.ShowDialog<bool>(mainWindow);
@@ -191,7 +192,8 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
     {
         var modNameDialog = new EnterNameDialog()
         {
-            NameText = mod.Name
+            NameText = mod.Name,
+            Description = "Enter the mod name:"
         };
 
         var result = await modNameDialog.ShowDialog<bool>(App.MainWindow);

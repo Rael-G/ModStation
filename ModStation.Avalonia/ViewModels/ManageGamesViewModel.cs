@@ -48,7 +48,8 @@ namespace ModStation.Avalonia.ViewModels
 
                     var gameNameDialog = new EnterNameDialog()
                     {
-                        NameText = folderName
+                        NameText = folderName,
+                        Description = "Enter the game name:"
                     };
 
                     var result = await gameNameDialog.ShowDialog<bool>(mainWindow);
@@ -103,7 +104,8 @@ namespace ModStation.Avalonia.ViewModels
         {
             var gameNameDialog = new EnterNameDialog()
                 {
-                    NameText = game.Name
+                    NameText = game.Name,
+                    Description = "Enter the game name:"
                 };
 
             var result = await gameNameDialog.ShowDialog<bool>(App.MainWindow);
