@@ -43,4 +43,10 @@ public class BaseRepository
     {
         return new SqliteConnection(ConnectionString);
     }
+
+    public IDbTransaction CreateTransaction(IDbConnection connection)
+    {
+        connection.Open();
+        return connection.BeginTransaction();
+    }
 }

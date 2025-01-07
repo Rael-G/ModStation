@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using ModManager.Core.Entities;
 
@@ -8,6 +9,23 @@ public class ArchiveRepository(string connectionString) : BaseRepository(connect
     public void Create(Archive archive)
     {
         using var connection = CreateConnection();
+        Create(archive, connection);
+    }
+
+    public void Update(Archive archive)
+    {
+        using var connection = CreateConnection();
+        Update(archive, connection);
+    }
+
+    public void Delete(Archive archive)
+    {
+        using var connection = CreateConnection();
+        Delete(archive, connection);
+    }
+
+    public void Create(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
+    {
         var sql = @"
             INSERT INTO Archives (
                 Id, RelativePath, GameId
@@ -18,26 +36,24 @@ public class ArchiveRepository(string connectionString) : BaseRepository(connect
 
         ";
 
-        connection.Execute(sql, archive);
+        connection.Execute(sql, archive, transaction);
     }
 
-    public void Update(Archive archive)
+    public void Update(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
     {
-        using var connection = CreateConnection();
         var sql = @"
             UPDATE Archives
             SET RelativePath = @RelativePath
             WHERE Id = @Id;
         ";
-        connection.Execute(sql, archive);
+        connection.Execute(sql, archive, transaction);
     }
 
-    public void Delete(Archive archive)
+    public void Delete(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
     {
-        using var connection = CreateConnection();
         var sql = @"
             DELETE FROM Archives WHERE Id = @Id;
         ";
-        connection.Execute(sql, new { archive.Id});
+        connection.Execute(sql, new { archive.Id}, transaction);
     }
 }

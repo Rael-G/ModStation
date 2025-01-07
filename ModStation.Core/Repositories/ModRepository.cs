@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using ModManager.Core.Entities;
 
@@ -8,6 +9,23 @@ public class ModRepository(string connectionString) : BaseRepository(connectionS
     public void Create(Mod mod)
     {
         using var connection = CreateConnection();
+        Create(mod, connection);
+    }
+
+    public void Update(Mod mod)
+    {
+        using var connection = CreateConnection();
+        Update(mod, connection);
+    }
+
+    public void Delete(Mod mod)
+    {
+        using var connection = CreateConnection();
+        Delete(mod, connection);
+    }
+
+    public void Create(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
+    {
         var sql = @"
             INSERT INTO Mods (
                 Id, Name, ModPath, IsEnable, ""Order"", GameId
@@ -18,26 +36,24 @@ public class ModRepository(string connectionString) : BaseRepository(connectionS
 
         ";
 
-        connection.Execute(sql, mod);
+        connection.Execute(sql, mod, transaction);
     }
 
-    public void Update(Mod mod)
+    public void Update(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
     {
-        using var connection = CreateConnection();
         var sql = @"
             UPDATE Mods
             SET Name = @Name, ModPath = @ModPath, ""Order"" = @Order, IsEnable = @IsEnable
             WHERE Id = @Id;
         ";
-        connection.Execute(sql, mod);
+        connection.Execute(sql, mod, transaction);
     }
 
-    public void Delete(Mod mod)
+    public void Delete(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
     {
-        using var connection = CreateConnection();
         var sql = @"
             DELETE FROM Mods WHERE Id = @Id;
         ";
-        connection.Execute(sql, new { mod.Id});
+        connection.Execute(sql, new { mod.Id}, transaction);
     }
 }

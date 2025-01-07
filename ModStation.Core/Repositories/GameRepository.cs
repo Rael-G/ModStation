@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Extensions;
@@ -9,6 +10,68 @@ public class GameRepository(string connectionString) : BaseRepository(connection
     public void Create(Game game)
     {
         using var connection = CreateConnection();
+        Create(game, connection);
+    }
+
+    public void Update(Game game)
+    {
+        using var connection = CreateConnection();
+        connection.Open();
+        using var transaction = connection.BeginTransaction();
+        Update(game, connection, transaction);
+        transaction.Commit();
+    }
+
+    public void Delete(Game game)
+    {
+        using var connection = CreateConnection();
+        Delete(game, connection);
+    }
+
+    public IEnumerable<Game> GetAll()
+    {
+        using var connection = CreateConnection();
+        var sql = "SELECT * FROM Games;";
+        var games = connection.Query<Game>(sql).ToList();
+
+        foreach (var game in games)
+        {
+            sql = "SELECT * FROM Mods WHERE GameId = @GameId;";
+            game.Mods = connection.Query<Mod>(sql, new { GameId = game.Id }).ToModList();
+
+            sql = "SELECT * FROM Archives WHERE GameId = @GameId;";
+            game.Archives = connection.Query<Archive>(sql, new { GameId = game.Id }).ToList();
+
+            foreach (var mod in game.Mods)
+            {
+                sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ModId = @ModId";
+                var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ModId = mod.Id });
+
+                mod.Archives = game.Archives
+                    .Where(a => modArchives.Any(ma => ma.ModId == mod.Id && ma.ArchiveId == a.Id))
+                    .ToList();
+
+                mod.Game = game;
+            }
+
+            foreach (var archive in game.Archives)
+            {
+                sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ArchiveId = @ArchiveId";
+                var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ArchiveId = archive.Id });
+
+                archive.Mods = game.Mods
+                    .Where(m => modArchives.Any(ma => ma.ArchiveId == archive.Id && ma.ModId == m.Id))
+                    .ToList();
+                
+                archive.Game = game;
+            }
+        }
+
+        return games;
+    }
+
+    public void Create(Game game, IDbConnection connection, IDbTransaction? transaction = null)
+    {
         var sql = @"
             INSERT INTO Games (
                 Id, Name, GamePath, BackupPath, ModsPath
@@ -19,15 +82,11 @@ public class GameRepository(string connectionString) : BaseRepository(connection
 
         ";
 
-        connection.Execute(sql, game);
+        connection.Execute(sql, game, transaction);
     }
 
-    public void Update(Game game)
+    public void Update(Game game, IDbConnection connection, IDbTransaction transaction)
     {
-        using var connection = CreateConnection();
-        connection.Open();
-        using var transaction = connection.BeginTransaction();
-
         try
         {
             var sql = @"
@@ -71,8 +130,6 @@ public class GameRepository(string connectionString) : BaseRepository(connection
                     GameId = game.Id
                 }, transaction);
             }
-
-            transaction.Commit();
         }
         catch
         {
@@ -81,52 +138,9 @@ public class GameRepository(string connectionString) : BaseRepository(connection
         }
     }
 
-    public void Delete(Game game)
+    public void Delete(Game game, IDbConnection connection, IDbTransaction? transaction = null)
     {
-        using var connection = CreateConnection();
         var sql = "DELETE FROM Games WHERE Id = @Id;";
-        connection.Execute(sql, game);
-    }
-
-    public IEnumerable<Game> GetAll()
-    {
-        using var connection = CreateConnection();
-        var sql = "SELECT * FROM Games;";
-        var games = connection.Query<Game>(sql).ToList();
-
-        foreach (var game in games)
-        {
-            sql = "SELECT * FROM Mods WHERE GameId = @GameId;";
-            game.Mods = connection.Query<Mod>(sql, new { GameId = game.Id }).ToModList();
-
-            sql = "SELECT * FROM Archives WHERE GameId = @GameId;";
-            game.Archives = connection.Query<Archive>(sql, new { GameId = game.Id }).ToList();
-
-            foreach (var mod in game.Mods)
-            {
-                sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ModId = @ModId";
-                var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ModId = mod.Id });
-
-                mod.Archives = game.Archives
-                    .Where(a => modArchives.Any(ma => ma.ModId == mod.Id && ma.ArchiveId == a.Id))
-                    .ToList();
-
-                mod.Game = game;
-            }
-
-            foreach (var archive in game.Archives)
-            {
-                sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ArchiveId = @ArchiveId";
-                var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ArchiveId = archive.Id });
-
-                archive.Mods = game.Mods
-                    .Where(m => modArchives.Any(ma => ma.ArchiveId == archive.Id && ma.ModId == m.Id))
-                    .ToList();
-                
-                archive.Game = game;
-            }
-        }
-
-        return games;
+        connection.Execute(sql, game, transaction);
     }
 }
