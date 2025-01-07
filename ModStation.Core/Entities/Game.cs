@@ -18,16 +18,18 @@ public class Game
 
     public string BasePath => Path.Combine(GamePath, "ModStation");
 
-    // Primary constructor
     public Game(string gamePath, string name)
     {
         Id = Guid.NewGuid().ToString();
         Name = name;
         GamePath = gamePath;
-        InitializePaths();
+        BackupPath = Path.Combine(BasePath, "Backup");
+        ModsPath = Path.Combine(BasePath, "Mods");
+
+        Directory.CreateDirectory(BackupPath);
+        Directory.CreateDirectory(ModsPath);
     }
 
-    // Overloaded constructor for existing games
     public Game(string id, string name, string gamePath, string backupPath, string modsPath, ModList mods, List<Archive> archives)
     {
         Id = id;
@@ -39,16 +41,9 @@ public class Game
         Archives = archives;
     }
 
-    // Parameterless constructor for serialization
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public Game() { }
-
-    private void InitializePaths()
-    {
-        BackupPath = Path.Combine(BasePath, "Backup");
-        ModsPath = Path.Combine(BasePath, "Mods");
-        Directory.CreateDirectory(BackupPath);
-        Directory.CreateDirectory(ModsPath);
-    }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     public Mod InstallMod(string archiveFilePath, string modName)
     {
