@@ -6,8 +6,8 @@ using ModStation.Avalonia.ViewModels;
 using ModStation.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using ModStation.Core.Interfaces;
-using ModManager.Core.Repositories;
 using ModStation.Core.Services;
+using ModStation.Core.Repositories;
 
 namespace ModStation.Avalonia;
 
@@ -27,16 +27,21 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var serviceCollection = new ServiceCollection();
+            
+            var DataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)!, "ModStation");
+            var connectionString = $"Data Source={Path.Combine(DataDirectory, "ModStation.db")}";
 
-            serviceCollection.AddScoped<IGameRepository, GameRepository>();
-            serviceCollection.AddScoped<IModRepository, ModRepository>();
-            serviceCollection.AddScoped<IArchiveRepository, ArchiveRepository>();
-            serviceCollection.AddScoped<IArchiveModRepository, IArchiveModRepository>();
+            serviceCollection.AddSingleton<IContext>((provider) => new Context(connectionString));
 
-            serviceCollection.AddScoped<IGameService, GameService>();
-            serviceCollection.AddScoped<IModService, ModsService>();
-            serviceCollection.AddScoped<IArchiveService, ArchiveService>();
-            serviceCollection.AddScoped<IFileService, FileService>();
+            serviceCollection.AddSingleton<IGameRepository, GameRepository>();
+            serviceCollection.AddSingleton<IModRepository, ModRepository>();
+            serviceCollection.AddSingleton<IArchiveRepository, ArchiveRepository>();
+            serviceCollection.AddSingleton<IArchiveModRepository, ArchiveModRepository>();
+
+            serviceCollection.AddSingleton<IGameService, GameService>();
+            serviceCollection.AddSingleton<IModService, ModsService>();
+            serviceCollection.AddSingleton<IArchiveService, ArchiveService>();
+            serviceCollection.AddSingleton<IFileService, FileService>();
 
             serviceCollection.AddSingleton<MainWindowViewModel>();
             serviceCollection.AddSingleton<ManageGamesViewModel>();
