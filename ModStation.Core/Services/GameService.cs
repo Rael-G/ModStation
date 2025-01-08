@@ -75,7 +75,10 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
 
     private async Task DeleteAllModsAsync(Game game)
     {
-        foreach (var mod in game.Mods)
+        // Necessary to prevent modifying the collection while deleting mod
+        var mods = game.Mods.ToList();
+        
+        foreach (var mod in mods)
         {
             await _modService.DeleteAsync(mod);
         }

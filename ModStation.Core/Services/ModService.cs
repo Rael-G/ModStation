@@ -75,6 +75,7 @@ public class ModsService(IModRepository modRepository,
         if (mod.IsEnable) await DisableAsync(mod);
 
         await UnlinkArchivesAsync(mod);
+        await _modRepository.DeleteAsync(mod);
         await _fileService.DeleteDirectoryAsync(mod.ModPath);
 
         mod.Game.Mods.Remove(mod);
@@ -160,7 +161,5 @@ public class ModsService(IModRepository modRepository,
         {
             await _archiveModRepository.DeleteAsync(archive.Id, mod.Id);
         }
-
-        await _modRepository.DeleteAsync(mod);
     }
 }
