@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ModStation.Avalonia.Views;
 using ModStation.Avalonia.Extensions;
 using ModStation.Core.Interfaces;
+using System.Threading.Tasks;
 
 namespace ModStation.Avalonia.ViewModels
 {
@@ -85,7 +86,7 @@ namespace ModStation.Avalonia.ViewModels
         }
 
         [RelayCommand]
-        public void RemoveGame(Game game)
+        public async Task RemoveGame(Game game)
         {
             var progressDialog = new ProgressDialog()
             {
@@ -94,11 +95,8 @@ namespace ModStation.Avalonia.ViewModels
             };
             progressDialog.Show(App.MainWindow);
 
-            Task.Run(() =>
-            {
-                _gameService.DeleteAsync(game);
-                Games.Remove(game);
-            });
+            await _gameService.DeleteAsync(game);
+            Games.Remove(game);
 
             progressDialog.Close();
         }

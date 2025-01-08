@@ -66,11 +66,8 @@ public partial class ManageModsViewModel(Game game, IModService modService) : Vi
                 progressDialog.Show(mainWindow);
                 try
                 {
-                    await Task.Run( async () => 
-                    {
-                        var mod = await _modService.CreateAsync(modName, modPath, _game);
-                        Mods.Insert(0, mod);
-                    });
+                    var mod = await _modService.CreateAsync(modName, modPath, _game);
+                    Mods.Insert(0, mod);
                 }
                 catch (Exception e)
                 {
@@ -85,32 +82,21 @@ public partial class ManageModsViewModel(Game game, IModService modService) : Vi
     }
 
     [RelayCommand]
-    public void ToggleMod(Mod mod)
+    public async Task ToggleModAsync(Mod mod)
     {
-        var progressDialog = new ProgressDialog();
-        var message = mod.IsEnable ? "Enabling" : "Disabling";
-        progressDialog.Text = $"{message} {mod.Name}";
-
-        progressDialog.Show(App.MainWindow);
-
-        Task.Run(async () =>
+        if (mod.IsEnable)
         {
-            if (mod.IsEnable)
-            {
-                await _modService.DisableAsync(mod);
-            }
-            else
-            {
-                await _modService.EnableAsync(mod);
-            }
-            Mods.Refresh(mod);
-        });
-
-        progressDialog.Close();
+            await _modService.DisableAsync(mod);
+        }
+        else
+        {
+            await _modService.EnableAsync(mod);
+        }
+        Mods.Refresh(mod);
     }
 
     [RelayCommand]
-    public void UninstallMod(Mod mod)
+    public async Task UninstallModAsync(Mod mod)
     {
         var progressDialog = new ProgressDialog()
         {
@@ -119,63 +105,40 @@ public partial class ManageModsViewModel(Game game, IModService modService) : Vi
         progressDialog.Show(App.MainWindow);
 
 
-        Task.Run(async () =>
-        {
-            await _modService.DeleteAsync(mod);
-            Mods.Remove(mod);
-        });
+        await _modService.DeleteAsync(mod);
+        Mods.Remove(mod);
         
         progressDialog.Close();
     }
 
     [RelayCommand]
-    private void MoveUp(Mod mod)
+    private async Task MoveUpAsync(Mod mod)
     {
-        var progressDialog = new ProgressDialog()
+        var index = Mods.IndexOf(mod);
+        if (index > 0)
         {
-            Text = $"Moving up {mod.Name}",
-        };
-        progressDialog.Show(App.MainWindow);
-        
-        Task.Run(async () =>
-        {
-            var index = Mods.IndexOf(mod);
-            if (index > 0)
-            {
-                var temp = Mods[index - 1];
-                Mods[index - 1] = mod;
-                Mods[index] = temp;
-                await _modService.SwapOrderAsync(mod, index - 1);
-                Mods.Refresh(mod);
-            }
-        });
-        
-        progressDialog.Close();
+            var temp = Mods[index - 1];
+            Mods[index - 1] = mod;
+            Mods[index] = temp;
+            await _modService.SwapOrderAsync(mod, index - 1);
+            Mods.Refresh(Mods[index - 1]);
+            Mods.Refresh(Mods[index]);
+        }
     }
 
     [RelayCommand]
-    private void MoveDown(Mod mod)
+    private async Task MoveDown(Mod mod)
     {
-        var progressDialog = new ProgressDialog()
+        var index = Mods.IndexOf(mod);
+        if (index < Mods.Count - 1)
         {
-            Text = $"Moving up {mod.Name}",
-        };
-        progressDialog.Show(App.MainWindow);
-        
-        Task.Run(async () =>
-        {
-            var index = Mods.IndexOf(mod);
-            if (index < Mods.Count - 1)
-            {
-                var temp = Mods[index + 1];
-                Mods[index + 1] = mod;
-                Mods[index] = temp;
-                await _modService.SwapOrderAsync(mod, index + 1);
-                Mods.Refresh(mod);
-            }
-        });
-        
-        progressDialog.Close();
+            var temp = Mods[index + 1];
+            Mods[index + 1] = mod;
+            Mods[index] = temp;
+            await _modService.SwapOrderAsync(mod, index + 1);
+            Mods.Refresh(Mods[index + 1]);
+            Mods.Refresh(Mods[index]);
+        }
     }
 
     [RelayCommand]

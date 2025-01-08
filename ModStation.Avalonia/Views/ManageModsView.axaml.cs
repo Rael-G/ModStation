@@ -30,7 +30,7 @@ public partial class ManageModsView : UserControl
             var grid = sender as Grid;
             var mod = grid?.DataContext as Mod;
             var dataContext = DataContext as ManageModsViewModel;
-            dataContext?.ToggleMod(mod);
+            dataContext?.ToggleModAsync(mod);
         }
     }
 }
