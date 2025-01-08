@@ -5,10 +5,10 @@ namespace ModStation.Core.Interfaces;
 
 public interface IArchiveRepository : IBaseRepository
 {
-    void Create(Archive archive);
-    void Update(Archive archive);
-    void Delete(Archive archive);
-    void Create(Archive archive, IDbConnection connection, IDbTransaction? transaction = null);
-    void Update(Archive archive, IDbConnection connection, IDbTransaction transaction);
-    void Delete(Archive archive, IDbConnection connection, IDbTransaction? transaction = null);
+    Task CreateAsync(Archive archive);
+    Task UpdateAsync(Archive archive);
+    Task DeleteAsync(Archive archive);
+    Task CreateAsync(Archive archive, IDbConnection connection, IDbTransaction? transaction = null);
+    Task UpdateAsync(Archive archive, IDbConnection connection, IDbTransaction transaction);
+    Task DeleteAsync(Archive archive, IDbConnection connection, IDbTransaction? transaction = null);
 }

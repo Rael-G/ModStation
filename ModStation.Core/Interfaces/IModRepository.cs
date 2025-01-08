@@ -5,10 +5,10 @@ namespace ModStation.Core.Interfaces;
 
 public interface IModRepository : IBaseRepository
 {
-    void Create(Mod mod);
-    void Update(Mod mod);
-    void Delete(Mod mod);
-    void Create(Mod mod, IDbConnection connection, IDbTransaction? transaction = null);
-    void Update(Mod mod, IDbConnection connection, IDbTransaction transaction);
-    void Delete(Mod mod, IDbConnection connection, IDbTransaction? transaction = null);
+    Task CreateAsync(Mod mod);
+    Task UpdateAsync(Mod mod);
+    Task DeleteAsync(Mod mod);
+    Task CreateAsync(Mod mod, IDbConnection connection, IDbTransaction? transaction = null);
+    Task UpdateAsync(Mod mod, IDbConnection connection, IDbTransaction transaction);
+    Task DeleteAsync(Mod mod, IDbConnection connection, IDbTransaction? transaction = null);
 }

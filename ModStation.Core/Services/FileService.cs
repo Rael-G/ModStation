@@ -1,4 +1,3 @@
-using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
 using SharpCompress.Archives;
 
@@ -6,7 +5,6 @@ namespace ModStation.Core.Services;
 
 public class FileService : IFileService
 {
-
     public void ValidatePath(string path)
     {
         if (!Directory.Exists(path))
@@ -22,39 +20,45 @@ public class FileService : IFileService
         return newPath;
     }
 
-    public void DeleteDirectory(string path)
+    public void CreateDirectory(string? directoryPath)
+    {
+        if (!string.IsNullOrWhiteSpace(directoryPath) && !Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+    }
+
+    public async Task DeleteDirectoryAsync(string path, bool recursive = true)
     {
         if (Directory.Exists(path))
         {
-            Directory.Delete(path, true);
+            await Task.Run(() => Directory.Delete(path, recursive));
         }
     }
 
-    public void DeleteFile(string filePath)
+    public async Task DeleteFileAsync(string filePath)
     {
         if (File.Exists(filePath))
         {
-            File.Delete(filePath);
+            await Task.Run(() => File.Delete(filePath));
         }
     }
 
-    public void CopyDirectory(string sourcePath, string destinationPath)
+    public async Task CopyDirectoryAsync(string sourcePath, string destinationPath)
     {
         foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
         {
-            Directory.CreateDirectory(Path.Combine(destinationPath, Path.GetRelativePath(sourcePath, dirPath)));
+            await Task.Run(() => CreateDirectory(Path.Combine(destinationPath, Path.GetRelativePath(sourcePath, dirPath))));
         }
 
         foreach (var filePath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
         {
             var targetFilePath = Path.Combine(destinationPath, Path.GetRelativePath(sourcePath, filePath));
-            File.Copy(filePath, targetFilePath, overwrite: true);
+            await Task.Run(() => File.Copy(filePath, targetFilePath, overwrite: true));
         }
-
-        Console.WriteLine($"Copied directory '{sourcePath}' to '{destinationPath}'.");
     }
 
-    public void ExtractArchive(string archivePath, string destinationPath)
+    public async Task ExtractArchiveAsync(string archivePath, string destinationPath)
     {
         if (!File.Exists(archivePath))
         {
@@ -62,8 +66,6 @@ public class FileService : IFileService
         }
 
         using var archive = ArchiveFactory.Open(archivePath);
-        archive.ExtractToDirectory(destinationPath);
-
-        Console.WriteLine($"Extracted archive '{archivePath}' to '{destinationPath}'.");
+        await Task.Run(() => archive.ExtractToDirectory(destinationPath));
     }
 }

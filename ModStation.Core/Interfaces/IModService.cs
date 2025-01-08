@@ -4,9 +4,10 @@ namespace ModStation.Core.Interfaces;
 
 public interface IModService
 {
-    Mod Create(string modName, string sourcePath, Game game);
-    void Delete(Mod mod);
-    void Enable(Mod mod);
-    void Disable(Mod mod);
-    void SwapOrder(Mod mod, int order);
+    Task<Mod> CreateAsync(string modName, string sourcePath, Game game);
+    Task DeleteAsync(Mod mod);
+    Task UpdateAsync(Mod mod);
+    Task EnableAsync(Mod mod);
+    Task DisableAsync(Mod mod);
+    Task SwapOrderAsync(Mod mod, int order);
 }

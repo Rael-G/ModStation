@@ -4,8 +4,8 @@ namespace ModStation.Core.Interfaces;
 
 public interface IArchiveModRepository : IBaseRepository
 {
-    void Create(string archiveId, string modId);
-    void Delete(string archiveId, string modId);
-    void Create(string archiveId, string modId, IDbConnection connection, IDbTransaction? transaction = null);
-    void Delete(string archiveId, string modId, IDbConnection connection, IDbTransaction? transaction = null);
+    Task CreateAsync(string archiveId, string modId);
+    Task DeleteAsync(string archiveId, string modId);
+    Task CreateAsync(string archiveId, string modId, IDbConnection connection, IDbTransaction? transaction = null);
+    Task DeleteAsync(string archiveId, string modId, IDbConnection connection, IDbTransaction? transaction = null);
 }

@@ -5,11 +5,11 @@ namespace ModStation.Core.Interfaces;
 
 public interface IGameRepository : IBaseRepository
 {
-    void Create(Game game);
-    void Update(Game game);
-    void Delete(Game game);
-    IEnumerable<Game> GetAll();
-    void Create(Game game, IDbConnection connection, IDbTransaction? transaction = null);
-    void Update(Game game, IDbConnection connection, IDbTransaction transaction);
-    void Delete(Game game, IDbConnection connection, IDbTransaction? transaction = null);
+    Task CreateAsync(Game game);
+    Task UpdateAsync(Game game);
+    Task DeleteAsync(Game game);
+    Task<IEnumerable<Game>> GetAllAsync();
+    Task CreateAsync(Game game, IDbConnection connection, IDbTransaction? transaction = null);
+    Task UpdateAsync(Game game, IDbConnection connection, IDbTransaction transaction);
+    Task DeleteAsync(Game game, IDbConnection connection, IDbTransaction? transaction = null);
 }

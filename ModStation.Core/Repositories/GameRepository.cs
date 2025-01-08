@@ -1,4 +1,5 @@
 using System.Data;
+using System.Threading.Tasks;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Extensions;
@@ -8,45 +9,45 @@ namespace ModManager.Core.Repositories;
 
 public class GameRepository(string connectionString) : BaseRepository(connectionString), IGameRepository
 {
-    public void Create(Game game)
+    public async Task CreateAsync(Game game)
     {
         using var connection = CreateConnection();
-        Create(game, connection);
+        await CreateAsync(game, connection);
     }
 
-    public void Update(Game game)
+    public async Task UpdateAsync(Game game)
     {
         using var connection = CreateConnection();
         connection.Open();
         using var transaction = connection.BeginTransaction();
-        Update(game, connection, transaction);
+        await UpdateAsync(game, connection, transaction);
         transaction.Commit();
     }
 
-    public void Delete(Game game)
+    public async Task DeleteAsync(Game game)
     {
         using var connection = CreateConnection();
-        Delete(game, connection);
+        await DeleteAsync(game, connection);
     }
 
-    public IEnumerable<Game> GetAll()
+    public async Task<IEnumerable<Game>> GetAllAsync()
     {
         using var connection = CreateConnection();
         var sql = "SELECT * FROM Games;";
-        var games = connection.Query<Game>(sql).ToList();
+        var games = (await connection.QueryAsync<Game>(sql)).ToList();
 
         foreach (var game in games)
         {
             sql = "SELECT * FROM Mods WHERE GameId = @GameId;";
-            game.Mods = connection.Query<Mod>(sql, new { GameId = game.Id }).ToModList();
+            game.Mods = (await connection.QueryAsync<Mod>(sql, new { GameId = game.Id })).ToModList();
 
             sql = "SELECT * FROM Archives WHERE GameId = @GameId;";
-            game.Archives = connection.Query<Archive>(sql, new { GameId = game.Id }).ToList();
+            game.Archives = (await connection.QueryAsync<Archive>(sql, new { GameId = game.Id })).ToList();
 
             foreach (var mod in game.Mods)
             {
                 sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ModId = @ModId";
-                var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ModId = mod.Id });
+                var modArchives = await connection.QueryAsync<(string ModId, string ArchiveId)>(sql, new { ModId = mod.Id });
 
                 mod.Archives = game.Archives
                     .Where(a => modArchives.Any(ma => ma.ModId == mod.Id && ma.ArchiveId == a.Id))
@@ -58,7 +59,7 @@ public class GameRepository(string connectionString) : BaseRepository(connection
             foreach (var archive in game.Archives)
             {
                 sql = "SELECT ModId, ArchiveId FROM ArchiveMod WHERE ArchiveId = @ArchiveId";
-                var modArchives = connection.Query<(string ModId, string ArchiveId)>(sql, new { ArchiveId = archive.Id });
+                var modArchives = await connection.QueryAsync<(string ModId, string ArchiveId)>(sql, new { ArchiveId = archive.Id });
 
                 archive.Mods = game.Mods
                     .Where(m => modArchives.Any(ma => ma.ArchiveId == archive.Id && ma.ModId == m.Id))
@@ -71,7 +72,7 @@ public class GameRepository(string connectionString) : BaseRepository(connection
         return games;
     }
 
-    public void Create(Game game, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task CreateAsync(Game game, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             INSERT INTO Games (
@@ -83,10 +84,10 @@ public class GameRepository(string connectionString) : BaseRepository(connection
 
         ";
 
-        connection.Execute(sql, game, transaction);
+        await connection.ExecuteAsync(sql, game, transaction);
     }
 
-    public void Update(Game game, IDbConnection connection, IDbTransaction transaction)
+    public async Task UpdateAsync(Game game, IDbConnection connection, IDbTransaction transaction)
     {
         try
         {
@@ -95,7 +96,7 @@ public class GameRepository(string connectionString) : BaseRepository(connection
                 SET Name = @Name, GamePath = @GamePath, BackupPath = @BackupPath, ModsPath = @ModsPath
                 WHERE Id = @Id;
             ";
-            connection.Execute(sql, game, transaction);
+            await connection.ExecuteAsync(sql, game, transaction);
 
             sql = @"
                 UPDATE Mods
@@ -105,7 +106,7 @@ public class GameRepository(string connectionString) : BaseRepository(connection
 
             foreach (var mod in game.Mods)
             {
-                connection.Execute(sql, new
+                await connection.ExecuteAsync(sql, new
                 {
                     mod.Id,
                     mod.Name,
@@ -124,7 +125,7 @@ public class GameRepository(string connectionString) : BaseRepository(connection
 
             foreach (var archive in game.Archives)
             {
-                connection.Execute(updateArchiveSql, new
+                await connection.ExecuteAsync(updateArchiveSql, new
                 {
                     archive.Id,
                     archive.RelativePath,
@@ -139,9 +140,9 @@ public class GameRepository(string connectionString) : BaseRepository(connection
         }
     }
 
-    public void Delete(Game game, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task DeleteAsync(Game game, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = "DELETE FROM Games WHERE Id = @Id;";
-        connection.Execute(sql, game, transaction);
+        await connection.ExecuteAsync(sql, game, transaction);
     }
 }

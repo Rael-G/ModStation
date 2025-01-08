@@ -1,4 +1,5 @@
 using System.Data;
+using System.Threading.Tasks;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
@@ -7,25 +8,25 @@ namespace ModManager.Core.Repositories;
 
 public class ModRepository(string connectionString) : BaseRepository(connectionString), IModRepository
 {
-    public void Create(Mod mod)
+    public async Task CreateAsync(Mod mod)
     {
         using var connection = CreateConnection();
-        Create(mod, connection);
+        await CreateAsync(mod, connection);
     }
 
-    public void Update(Mod mod)
+    public async Task UpdateAsync(Mod mod)
     {
         using var connection = CreateConnection();
-        Update(mod, connection);
+        await UpdateAsync(mod, connection);
     }
 
-    public void Delete(Mod mod)
+    public async Task DeleteAsync(Mod mod)
     {
         using var connection = CreateConnection();
-        Delete(mod, connection);
+        await DeleteAsync(mod, connection);
     }
 
-    public void Create(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task CreateAsync(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             INSERT INTO Mods (
@@ -37,24 +38,24 @@ public class ModRepository(string connectionString) : BaseRepository(connectionS
 
         ";
 
-        connection.Execute(sql, mod, transaction);
+        await connection.ExecuteAsync(sql, mod, transaction);
     }
 
-    public void Update(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task UpdateAsync(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             UPDATE Mods
             SET Name = @Name, ModPath = @ModPath, ""Order"" = @Order, IsEnable = @IsEnable
             WHERE Id = @Id;
         ";
-        connection.Execute(sql, mod, transaction);
+        await connection.ExecuteAsync(sql, mod, transaction);
     }
 
-    public void Delete(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task DeleteAsync(Mod mod, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             DELETE FROM Mods WHERE Id = @Id;
         ";
-        connection.Execute(sql, new { mod.Id}, transaction);
+        await connection.ExecuteAsync(sql, new { mod.Id}, transaction);
     }
 }

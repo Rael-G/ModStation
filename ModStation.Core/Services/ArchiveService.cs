@@ -1,28 +1,25 @@
 using ModManager.Core.Entities;
-using ModManager.Core.Repositories;
 using ModStation.Core.Interfaces;
 
 namespace ModStation.Core.Services;
 
-public class ArchivesService(IArchiveRepository archiveRepository)
+public class ArchivesService(IArchiveRepository archiveRepository) : IArchiveService
 {
     private readonly IArchiveRepository _archiveRepository = archiveRepository;
 
-    public void Create(Archive archive)
+    public async Task CreateAsync(Archive archive)
     {
-        _archiveRepository.Create(archive);
+        await _archiveRepository.CreateAsync(archive);
     }
 
-    public void Update(Archive archive)
+    public async Task UpdateAsync(Archive archive)
     {
-        _archiveRepository.Update(archive);
+        await _archiveRepository.UpdateAsync(archive);
     }
 
-    public void Delete(Archive archive)
+    public async Task DeleteAsync(Archive archive)
     {
-        _archiveRepository.Delete(archive);
+        await _archiveRepository.DeleteAsync(archive);
     }
-
-    
 
 }

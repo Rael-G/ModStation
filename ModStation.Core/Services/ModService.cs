@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
 
@@ -17,7 +18,7 @@ public class ModsService(IModRepository modRepository,
 
     private readonly IFileService _fileService = fileService;
 
-    public Mod Create(string modName, string sourcePath, Game game)
+    public async Task<Mod> CreateAsync(string modName, string sourcePath, Game game)
     {
         using var connection = _modRepository.CreateConnection();
         using var transaction = _modRepository.CreateTransaction(connection);
@@ -30,15 +31,15 @@ public class ModsService(IModRepository modRepository,
             var modPath = _fileService.CreateDirectory(game.ModsPath, modName);
 
             mod = new Mod(modId, modName, modPath, game, []);
-            _modRepository.Create(mod, connection, transaction);
+            await _modRepository.CreateAsync(mod, connection, transaction);
 
             if (Directory.Exists(sourcePath))
             {
-                _fileService.CopyDirectory(sourcePath, modPath);
+                await _fileService.CopyDirectoryAsync(sourcePath, modPath);
             }
             else
             {
-                _fileService.ExtractArchive(sourcePath, modPath);
+                await _fileService.ExtractArchiveAsync(sourcePath, modPath);
             }
 
             game.Mods.Add(mod);
@@ -47,11 +48,11 @@ public class ModsService(IModRepository modRepository,
             {
                 string relativePath = Path.GetRelativePath(mod.ModPath, filePath);
                 var archive = mod.Game.Archives.FirstOrDefault(a => a.RelativePath == relativePath) 
-                            ?? CreateAndRegisterArchive(mod, relativePath);
+                            ?? await CreateAndRegisterArchiveAsync(mod, relativePath);
 
                 mod.Archives.Add(archive);
                 mod.Game.Archives.Add(archive);
-                LinkArchiveToMod(mod, archive);
+                await LinkArchiveToModAsync(mod, archive);
             }
         }
         catch
@@ -63,14 +64,19 @@ public class ModsService(IModRepository modRepository,
         return mod;
     }
 
-    public void Delete(Mod mod)
+    public async Task DeleteAsync(Mod mod)
     {
-        if (mod.IsEnable) Disable(mod);
+        if (mod.IsEnable) await DisableAsync(mod);
 
-        UnlinkArchives(mod);
-        DeleteModFiles(mod);
+        await UnlinkArchivesAsync(mod);
+        await _fileService.DeleteDirectoryAsync(mod.ModPath);
 
         mod.Game.Mods.Remove(mod);
+    }
+
+    public async Task UpdateAsync(Mod mod)
+    {
+        await _modRepository.UpdateAsync(mod);
     }
 
     // public void Update(Game game, Mod mod, string filePath)
@@ -79,7 +85,7 @@ public class ModsService(IModRepository modRepository,
     //     Create(mod.Name, filePath, game);
     // }
 
-    public void Enable(Mod mod)
+    public async Task EnableAsync(Mod mod)
     {
         if (mod.IsEnable) return;
 
@@ -88,15 +94,16 @@ public class ModsService(IModRepository modRepository,
             if (!mod.IsOverwrittenByLowerOrderMod(archive))
             {
                 mod.EnsureTargetDirectoryExists(archive.TargetPath);
-                _fileService.DeleteFile(archive.TargetPath);
+                await _fileService.DeleteFileAsync(archive.TargetPath);
                 File.CreateSymbolicLink(archive.TargetPath, archive.ModPath(mod));
             }
         }
 
         mod.IsEnable = true;
+        await UpdateAsync(mod);
     }
 
-    public void Disable(Mod mod)
+    public async Task DisableAsync(Mod mod)
     {
         if (!mod.IsEnable) return;
 
@@ -104,57 +111,51 @@ public class ModsService(IModRepository modRepository,
 
         foreach (var archive in mod.Archives)
         {
-            _fileService.DeleteFile(archive.TargetPath);
+            await _fileService.DeleteFileAsync(archive.TargetPath);
 
-            _fileService.DeleteFile(archive.TargetPath);
+            await _fileService.DeleteFileAsync(archive.TargetPath);
 
             string replacementFile = mod.GetReplacementFilePath(archive);
             if (!string.IsNullOrEmpty(replacementFile) && File.Exists(replacementFile))
             {
-                File.CreateSymbolicLink(archive.TargetPath, replacementFile);
+                await Task.Run(() => File.CreateSymbolicLink(archive.TargetPath, replacementFile));
             }
         }
+
+        await UpdateAsync(mod);
     }
 
-    public void SwapOrder(Mod mod, int order)
+    public async Task SwapOrderAsync(Mod mod, int order)
     {
         var enabled = mod.IsEnable;
 
-        if (enabled) Disable(mod);
+        if (enabled) await DisableAsync(mod);
 
         mod.Game.Mods.Insert(order, mod);
         
-        if (enabled) Enable(mod);
+        if (enabled) await EnableAsync(mod);
     }
 
-    private Archive CreateAndRegisterArchive(Mod mod, string relativePath)
+    private async Task<Archive> CreateAndRegisterArchiveAsync(Mod mod, string relativePath)
     {
         var archive = new Archive(Guid.NewGuid().ToString(), relativePath, mod.Game, []);
-        _archiveRepository.Create(archive);
+        await _archiveRepository.CreateAsync(archive);
         return archive;
     }
 
-    private void LinkArchiveToMod(Mod mod, Archive archive)
+    private async Task LinkArchiveToModAsync(Mod mod, Archive archive)
     {
         archive.Mods.Add(mod);
-        _archiveModRepository.Create(archive.Id, mod.Id);
+        await _archiveModRepository.CreateAsync(archive.Id, mod.Id);
     }
 
-    private void UnlinkArchives(Mod mod)
+    private async Task UnlinkArchivesAsync(Mod mod)
     {
         foreach (var archive in mod.Archives)
         {
-            _archiveModRepository.Delete(archive.Id, mod.Id);
+            await _archiveModRepository.DeleteAsync(archive.Id, mod.Id);
         }
 
-        _modRepository.Delete(mod);
-    }
-
-    private void DeleteModFiles(Mod mod)
-    {
-        if (Directory.Exists(mod.ModPath))
-        {
-            Directory.Delete(mod.ModPath, recursive: true);
-        }
+        await _modRepository.DeleteAsync(mod);
     }
 }

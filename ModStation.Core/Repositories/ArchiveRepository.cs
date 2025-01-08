@@ -1,4 +1,5 @@
 using System.Data;
+using System.Threading.Tasks;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
@@ -7,25 +8,25 @@ namespace ModManager.Core.Repositories;
 
 public class ArchiveRepository(string connectionString) : BaseRepository(connectionString), IArchiveRepository
 {
-    public void Create(Archive archive)
+    public async Task CreateAsync(Archive archive)
     {
         using var connection = CreateConnection();
-        Create(archive, connection);
+        await CreateAsync(archive, connection);
     }
 
-    public void Update(Archive archive)
+    public async Task UpdateAsync(Archive archive)
     {
         using var connection = CreateConnection();
-        Update(archive, connection);
+        await UpdateAsync(archive, connection);
     }
 
-    public void Delete(Archive archive)
+    public async Task DeleteAsync(Archive archive)
     {
         using var connection = CreateConnection();
-        Delete(archive, connection);
+        await DeleteAsync(archive, connection);
     }
 
-    public void Create(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task CreateAsync(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             INSERT INTO Archives (
@@ -37,24 +38,24 @@ public class ArchiveRepository(string connectionString) : BaseRepository(connect
 
         ";
 
-        connection.Execute(sql, archive, transaction);
+        await connection.ExecuteAsync(sql, archive, transaction);
     }
 
-    public void Update(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task UpdateAsync(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             UPDATE Archives
             SET RelativePath = @RelativePath
             WHERE Id = @Id;
         ";
-        connection.Execute(sql, archive, transaction);
+        await connection.ExecuteAsync(sql, archive, transaction);
     }
 
-    public void Delete(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
+    public async Task DeleteAsync(Archive archive, IDbConnection connection, IDbTransaction? transaction = null)
     {
         var sql = @"
             DELETE FROM Archives WHERE Id = @Id;
         ";
-        connection.Execute(sql, new { archive.Id}, transaction);
+        await connection.ExecuteAsync(sql, new { archive.Id}, transaction);
     }
 }
