@@ -1,10 +1,11 @@
 using System.Data;
 using Dapper;
 using ModManager.Core.Entities;
+using ModStation.Core.Interfaces;
 
 namespace ModManager.Core.Repositories;
 
-public class ArchiveRepository(string connectionString) : BaseRepository(connectionString)
+public class ArchiveRepository(string connectionString) : BaseRepository(connectionString), IArchiveRepository
 {
     public void Create(Archive archive)
     {

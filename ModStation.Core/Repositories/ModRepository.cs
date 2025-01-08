@@ -1,10 +1,11 @@
 using System.Data;
 using Dapper;
 using ModManager.Core.Entities;
+using ModStation.Core.Interfaces;
 
 namespace ModManager.Core.Repositories;
 
-public class ModRepository(string connectionString) : BaseRepository(connectionString)
+public class ModRepository(string connectionString) : BaseRepository(connectionString), IModRepository
 {
     public void Create(Mod mod)
     {

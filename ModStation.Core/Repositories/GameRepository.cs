@@ -2,10 +2,11 @@ using System.Data;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Extensions;
+using ModStation.Core.Interfaces;
 
 namespace ModManager.Core.Repositories;
 
-public class GameRepository(string connectionString) : BaseRepository(connectionString)
+public class GameRepository(string connectionString) : BaseRepository(connectionString), IGameRepository
 {
     public void Create(Game game)
     {
