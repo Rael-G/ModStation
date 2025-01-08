@@ -1,28 +1,27 @@
 using System.Data;
-using System.Threading.Tasks;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
 
-namespace ModManager.Core.Repositories;
+namespace ModStation.Core.Repositories;
 
-public class ModRepository(string connectionString) : BaseRepository(connectionString), IModRepository
+public class ModRepository(IContext context) : BaseRepository(context), IModRepository
 {
     public async Task CreateAsync(Mod mod)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await CreateAsync(mod, connection);
     }
 
     public async Task UpdateAsync(Mod mod)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await UpdateAsync(mod, connection);
     }
 
     public async Task DeleteAsync(Mod mod)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await DeleteAsync(mod, connection);
     }
 

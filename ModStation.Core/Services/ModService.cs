@@ -1,5 +1,4 @@
 using System.Data;
-using System.Threading.Tasks;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
 
@@ -21,8 +20,8 @@ public class ModsService(IModRepository modRepository,
 
     public async Task<Mod> CreateAsync(string modName, string sourcePath, Game game)
     {
-        using var connection = _modRepository.CreateConnection();
-        using var transaction = _modRepository.CreateTransaction(connection);
+        using var connection = _modRepository.Context.CreateConnection();
+        using var transaction = _modRepository.Context.BeginTransaction(connection);
         Mod mod = null!;
         var modPath = string.Empty;
         try
@@ -136,10 +135,15 @@ public class ModsService(IModRepository modRepository,
     {
         var enabled = mod.IsEnable;
 
-        if (enabled) await DisableAsync(mod);
+        await DisableAsync(mod);
 
         mod.Game.Mods.Insert(order, mod);
-        
+
+        foreach(var m in mod.Game.Mods)
+        {
+            await UpdateAsync(m);
+        }
+
         if (enabled) await EnableAsync(mod);
     }
 

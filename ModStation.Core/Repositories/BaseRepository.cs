@@ -1,52 +1,8 @@
-using System.Data;
-using System.Reflection;
-using Lilmihe;
-using Microsoft.Data.Sqlite;
+using ModStation.Core.Interfaces;
 
-namespace ModManager.Core.Repositories;
+namespace ModStation.Core.Repositories;
 
-public class BaseRepository
+public class BaseRepository(IContext context) : IBaseRepository
 {
-    public string ConnectionString { get; set; }
-
-    private readonly string _scriptsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "./migrations");
-
-    private static bool _migrated = false;
-
-    public BaseRepository(string connectionString)
-    {
-        ConnectionString = connectionString;
-        using var connection = CreateConnection();
-
-        connection.Open();
-
-        var migrator = new MigrationHelper(_scriptsPath, connection);
-        if(!_migrated)
-        {
-            var migration = migrator.Migrate();
-            migration.Wait();
-            var result = migration.Result;
-            _migrated = true;
-
-            if (!result.Success)
-            {
-                Console.WriteLine($"Migration failed: {result.Message}");
-                if (result.Error != null)
-                {
-                    Console.WriteLine($"File: {result.Error.Message}");
-                }
-            }
-        }
-    }
-
-    public IDbConnection CreateConnection()
-    {
-        return new SqliteConnection(ConnectionString);
-    }
-
-    public IDbTransaction CreateTransaction(IDbConnection connection)
-    {
-        connection.Open();
-        return connection.BeginTransaction();
-    }
+    public IContext Context { get; set; } = context;
 }

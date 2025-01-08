@@ -1,28 +1,27 @@
 using System.Data;
-using System.Threading.Tasks;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
 
-namespace ModManager.Core.Repositories;
+namespace ModStation.Core.Repositories;
 
-public class ArchiveRepository(string connectionString) : BaseRepository(connectionString), IArchiveRepository
+public class ArchiveRepository(IContext context) : BaseRepository(context), IArchiveRepository
 {
     public async Task CreateAsync(Archive archive)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await CreateAsync(archive, connection);
     }
 
     public async Task UpdateAsync(Archive archive)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await UpdateAsync(archive, connection);
     }
 
     public async Task DeleteAsync(Archive archive)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await DeleteAsync(archive, connection);
     }
 

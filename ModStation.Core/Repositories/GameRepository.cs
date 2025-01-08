@@ -1,38 +1,36 @@
 using System.Data;
-using System.Threading.Tasks;
 using Dapper;
 using ModManager.Core.Entities;
 using ModStation.Core.Extensions;
 using ModStation.Core.Interfaces;
 
-namespace ModManager.Core.Repositories;
+namespace ModStation.Core.Repositories;
 
-public class GameRepository(string connectionString) : BaseRepository(connectionString), IGameRepository
+public class GameRepository(IContext context) : BaseRepository(context), IGameRepository
 {
     public async Task CreateAsync(Game game)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await CreateAsync(game, connection);
     }
 
     public async Task UpdateAsync(Game game)
     {
-        using var connection = CreateConnection();
-        connection.Open();
-        using var transaction = connection.BeginTransaction();
+        using var connection = Context.CreateConnection();
+        using var transaction = Context.BeginTransaction(connection);
         await UpdateAsync(game, connection, transaction);
         transaction.Commit();
     }
 
     public async Task DeleteAsync(Game game)
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         await DeleteAsync(game, connection);
     }
 
     public async Task<IEnumerable<Game>> GetAllAsync()
     {
-        using var connection = CreateConnection();
+        using var connection = Context.CreateConnection();
         var sql = "SELECT * FROM Games;";
         var games = (await connection.QueryAsync<Game>(sql)).ToList();
 
@@ -89,54 +87,46 @@ public class GameRepository(string connectionString) : BaseRepository(connection
 
     public async Task UpdateAsync(Game game, IDbConnection connection, IDbTransaction transaction)
     {
-        try
+        var sql = @"
+            UPDATE Games
+            SET Name = @Name, GamePath = @GamePath, BackupPath = @BackupPath, ModsPath = @ModsPath
+            WHERE Id = @Id;
+        ";
+        await connection.ExecuteAsync(sql, game, transaction);
+
+        sql = @"
+            UPDATE Mods
+            SET Name = @Name, ModPath = @ModPath, IsEnable = @IsEnable, ""Order"" = @Order, GameId = @GameId
+            WHERE Id = @Id;
+        ";
+
+        foreach (var mod in game.Mods)
         {
-            var sql = @"
-                UPDATE Games
-                SET Name = @Name, GamePath = @GamePath, BackupPath = @BackupPath, ModsPath = @ModsPath
-                WHERE Id = @Id;
-            ";
-            await connection.ExecuteAsync(sql, game, transaction);
-
-            sql = @"
-                UPDATE Mods
-                SET Name = @Name, ModPath = @ModPath, IsEnable = @IsEnable, ""Order"" = @Order, GameId = @GameId
-                WHERE Id = @Id;
-            ";
-
-            foreach (var mod in game.Mods)
+            await connection.ExecuteAsync(sql, new
             {
-                await connection.ExecuteAsync(sql, new
-                {
-                    mod.Id,
-                    mod.Name,
-                    mod.ModPath,
-                    mod.IsEnable,
-                    mod.Order,
-                    GameId = game.Id
-                }, transaction);
-            }
-
-            var updateArchiveSql = @"
-                UPDATE Archives
-                SET RelativePath = @RelativePath, GameId = @GameId
-                WHERE Id = @Id;
-            ";
-
-            foreach (var archive in game.Archives)
-            {
-                await connection.ExecuteAsync(updateArchiveSql, new
-                {
-                    archive.Id,
-                    archive.RelativePath,
-                    GameId = game.Id
-                }, transaction);
-            }
+                mod.Id,
+                mod.Name,
+                mod.ModPath,
+                mod.IsEnable,
+                mod.Order,
+                GameId = game.Id
+            }, transaction);
         }
-        catch
+
+        var updateArchiveSql = @"
+            UPDATE Archives
+            SET RelativePath = @RelativePath, GameId = @GameId
+            WHERE Id = @Id;
+        ";
+
+        foreach (var archive in game.Archives)
         {
-            transaction.Rollback();
-            throw;
+            await connection.ExecuteAsync(updateArchiveSql, new
+            {
+                archive.Id,
+                archive.RelativePath,
+                GameId = game.Id
+            }, transaction);
         }
     }
 
