@@ -17,10 +17,20 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
         var id = Guid.NewGuid().ToString();
         var backupPath = Path.Combine(BasePath(gamePath), "Backup");
         var modsPath = Path.Combine(BasePath(gamePath), "Mods");
-        Directory.CreateDirectory(backupPath);
-        Directory.CreateDirectory(modsPath);
+        _fileService.CreateDirectory(backupPath);
+         _fileService.CreateDirectory(modsPath);
 
         var game = new Game(id, name, gamePath, backupPath, modsPath, [], []);
+        try
+        {
+            _gameRepository.Create(game);
+        }
+        catch
+        {
+            _fileService.DeleteDirectory(backupPath);
+            _fileService.DeleteDirectory(modsPath);
+        }
+
         return game;
     }
 
@@ -31,6 +41,19 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
         ClearArchives(game);
         _fileService.DeleteDirectory(game.GamePath);
         _gameRepository.Delete(game);
+    }
+
+    public void Update(Game game)
+    {
+        _gameRepository.Update(game);
+    }
+
+    public void Update(IEnumerable<Game> games)
+    {
+        foreach (var game in games)
+        {
+            Update(game);
+        }
     }
 
     private void ClearArchives(Game game)
