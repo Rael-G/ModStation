@@ -13,6 +13,9 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
 
     public static string BasePath(string gamePath) => Path.Combine(gamePath, "ModStation");
 
+    public async Task<IEnumerable<Game>> GetAllAsync()
+        => await _gameRepository.GetAllAsync();
+    
     public async Task<Game> CreateAsync(string gamePath, string name)
     {
         var id = Guid.NewGuid().ToString();
@@ -46,17 +49,7 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
     }
 
     public async Task UpdateAsync(Game game)
-    {
-        await _gameRepository.UpdateAsync(game);
-    }
-
-    public async Task UpdateAsync(IEnumerable<Game> games)
-    {
-        foreach (var game in games)
-        {
-            await UpdateAsync(game);
-        }
-    }
+        => await _gameRepository.UpdateAsync(game);
 
     private async Task ClearArchivesAsync(Game game)
     {
