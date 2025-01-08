@@ -3,7 +3,7 @@ using ModStation.Core.Interfaces;
 
 namespace ModStation.Core.Services;
 
-public class ArchivesService(IArchiveRepository archiveRepository) : IArchiveService
+public class ArchiveService(IArchiveRepository archiveRepository) : IArchiveService
 {
     private readonly IArchiveRepository _archiveRepository = archiveRepository;
 
