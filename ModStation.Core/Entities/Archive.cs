@@ -28,16 +28,29 @@ public class Archive
     public Archive() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
+    public static void RestoreBackup(Archive archive)
+    {
+        if (File.Exists(archive.TargetPath))
+        {
+            File.Delete(archive.TargetPath);
+        } 
+            
+        if (!string.IsNullOrEmpty(archive.BackupPath) && File.Exists(archive.BackupPath))
+        {
+            File.Move(archive.BackupPath, archive.TargetPath, overwrite: true);
+        }
+    }
+
     private void Backup()
     {
         if (File.Exists(TargetPath) && !File.Exists(BackupPath))
         {
-            CreateDirectoryIfNotExists(Path.GetDirectoryName(BackupPath));
+            CreateDirectory(Path.GetDirectoryName(BackupPath));
             File.Copy(TargetPath, BackupPath, overwrite: false);
         }
     }
 
-    private static void CreateDirectoryIfNotExists(string? directoryPath)
+    private void CreateDirectory(string? directoryPath)
     {
         if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
         {
