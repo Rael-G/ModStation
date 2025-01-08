@@ -12,7 +12,7 @@ public class ModManagerService(Manager manager)
     {
         static string ModOption(Mod mod)
         {
-            return $"{(mod.IsEnable ? "[green]" : "[red]")}{mod.Name}{(mod.IsEnable ? " (Enabled)" : " (Disabled)")}[/]";
+            return $"{(mod.IsEnabled ? "[green]" : "[red]")}{mod.Name}{(mod.IsEnabled ? " (Enabled)" : " (Disabled)")}[/]";
         }
 
         while (true)
@@ -105,7 +105,7 @@ public class ModManagerService(Manager manager)
                 new SelectionPrompt<string>()
                     .Title($"[yellow]Manage mod: [blue]{mod.Name}[/][/]")
                     .AddChoices(
-                        mod.IsEnable ? "Disable Mod" : "Enable Mod",
+                        mod.IsEnabled ? "Disable Mod" : "Enable Mod",
                         "Uninstall Mod",
                         "Back",
                         "Exit"

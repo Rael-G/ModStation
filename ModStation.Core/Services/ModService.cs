@@ -72,7 +72,7 @@ public class ModsService(IModRepository modRepository,
 
     public async Task DeleteAsync(Mod mod)
     {
-        if (mod.IsEnable) await DisableAsync(mod);
+        if (mod.IsEnabled) await DisableAsync(mod);
 
         await UnlinkArchivesAsync(mod);
         await _modRepository.DeleteAsync(mod);
@@ -94,7 +94,7 @@ public class ModsService(IModRepository modRepository,
 
     public async Task EnableAsync(Mod mod)
     {
-        if (mod.IsEnable) return;
+        if (mod.IsEnabled) return;
 
         foreach (var archive in mod.Archives)
         {
@@ -106,15 +106,15 @@ public class ModsService(IModRepository modRepository,
             }
         }
 
-        mod.IsEnable = true;
+        mod.IsEnabled = true;
         await UpdateAsync(mod);
     }
 
     public async Task DisableAsync(Mod mod)
     {
-        if (!mod.IsEnable) return;
+        if (!mod.IsEnabled) return;
 
-        mod.IsEnable = false;
+        mod.IsEnabled = false;
 
         foreach (var archive in mod.Archives)
         {
@@ -134,7 +134,7 @@ public class ModsService(IModRepository modRepository,
 
     public async Task SwapOrderAsync(Mod mod, int order)
     {
-        var enabled = mod.IsEnable;
+        var enabled = mod.IsEnabled;
 
         await DisableAsync(mod);
 

@@ -84,7 +84,7 @@ public partial class ManageModsViewModel(Game game, IModService modService) : Vi
     [RelayCommand]
     public async Task ToggleModAsync(Mod mod)
     {
-        if (mod.IsEnable)
+        if (mod.IsEnabled)
         {
             await _modService.DisableAsync(mod);
         }

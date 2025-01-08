@@ -12,9 +12,9 @@ CREATE TABLE Mods (
     Id TEXT NOT NULL,
     Name TEXT NOT NULL,
     ModPath TEXT NOT NULL,
-    IsEnable INTEGER NOT NULL,
-    IsOverwritten INTEGER NOT NULL,
+    IsEnabled INTEGER NOT NULL,
     GameId TEXT,
+    "Order" INTEGER,
 
     PRIMARY KEY (Id),
     FOREIGN KEY (GameId) REFERENCES Games(Id)
@@ -22,7 +22,7 @@ CREATE TABLE Mods (
 
 CREATE TABLE Archives (
     Id TEXT NOT NULL,
-    RelativePath TEXT UNIQUE NOT NULL,
+    RelativePath TEXT NOT NULL,
     GameId TEXT,
 
     PRIMARY KEY (Id),

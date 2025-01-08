@@ -9,7 +9,7 @@ public class Mod : IComparable<Mod>
     public string ModPath { get; private set; }
     public Game Game { get; set; }
     public List<Archive> Archives { get; set; }
-    public bool IsEnable { get; set; }
+    public bool IsEnabled { get; set; }
     public string GameId { get; private set; }
 
     public int Order 
@@ -30,7 +30,7 @@ public class Mod : IComparable<Mod>
         Game = game;
         GameId = game.Id;
         Archives = archives;
-        IsEnable = isEnable;
+        IsEnabled = isEnable;
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -39,7 +39,7 @@ public class Mod : IComparable<Mod>
 
     public bool IsOverwrittenByLowerOrderMod(Archive archive)
     {
-        return archive.Mods.Any(m => m.Order < Order && m.IsEnable);
+        return archive.Mods.Any(m => m.Order < Order && m.IsEnabled);
     }
 
     public void EnsureTargetDirectoryExists(string targetPath)
@@ -54,7 +54,7 @@ public class Mod : IComparable<Mod>
     public string GetReplacementFilePath(Archive archive)
     {
         var lowerOrderMod = archive.Mods
-            .Where(m => m.IsEnable && m.Id != Id)
+            .Where(m => m.IsEnabled && m.Id != Id)
             .OrderBy(m => m.Order)
             .FirstOrDefault();
 

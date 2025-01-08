@@ -29,10 +29,10 @@ public class ModRepository(IContext context) : BaseRepository(context), IModRepo
     {
         var sql = @"
             INSERT INTO Mods (
-                Id, Name, ModPath, IsEnable, ""Order"", GameId
+                Id, Name, ModPath, IsEnabled, ""Order"", GameId
             )
             VALUES (
-                @Id, @Name, @ModPath, @IsEnable, @Order, @GameId
+                @Id, @Name, @ModPath, @IsEnabled, @Order, @GameId
             )
 
         ";
@@ -44,7 +44,7 @@ public class ModRepository(IContext context) : BaseRepository(context), IModRepo
     {
         var sql = @"
             UPDATE Mods
-            SET Name = @Name, ModPath = @ModPath, ""Order"" = @Order, IsEnable = @IsEnable
+            SET Name = @Name, ModPath = @ModPath, ""Order"" = @Order, IsEnabled = @IsEnabled
             WHERE Id = @Id;
         ";
         await connection.ExecuteAsync(sql, mod, transaction);

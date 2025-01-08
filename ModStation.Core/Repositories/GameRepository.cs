@@ -96,7 +96,7 @@ public class GameRepository(IContext context) : BaseRepository(context), IGameRe
 
         sql = @"
             UPDATE Mods
-            SET Name = @Name, ModPath = @ModPath, IsEnable = @IsEnable, ""Order"" = @Order, GameId = @GameId
+            SET Name = @Name, ModPath = @ModPath, IsEnabled = @IsEnabled, ""Order"" = @Order, GameId = @GameId
             WHERE Id = @Id;
         ";
 
@@ -107,7 +107,7 @@ public class GameRepository(IContext context) : BaseRepository(context), IGameRe
                 mod.Id,
                 mod.Name,
                 mod.ModPath,
-                mod.IsEnable,
+                mod.IsEnabled,
                 mod.Order,
                 GameId = game.Id
             }, transaction);
