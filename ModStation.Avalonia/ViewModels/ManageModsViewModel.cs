@@ -1,22 +1,19 @@
 using System.Collections.ObjectModel;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using ModManager;
 using ModManager.Core.Entities;
-using ModManager.Core.Exceptions;
 using ModStation.Avalonia.Extensions;
 using ModStation.Avalonia.Views;
+using ModStation.Core.Interfaces;
 
 namespace ModStation.Avalonia.ViewModels;
 
-public partial class ManageModsViewModel(Game game, Manager manager) : ViewModelBase
+public partial class ManageModsViewModel(Game game, IModService modService) : ViewModelBase
 {
     private readonly Game _game = game;
-    private readonly Manager _manager = manager;
+    private readonly IModService _modService = modService;
 
     public string GameName => _game.Name;
 
@@ -69,9 +66,9 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 progressDialog.Show(mainWindow);
                 try
                 {
-                    await Task.Run( () => 
+                    await Task.Run( async () => 
                     {
-                        var mod = _game.InstallMod(modPath, modName);
+                        var mod = await _modService.CreateAsync(modName, modPath, _game);
                         Mods.Insert(0, mod);
                     });
                 }
@@ -85,8 +82,6 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 }
             }
         }
-
-        _manager.Save();
     }
 
     [RelayCommand]
@@ -98,18 +93,17 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
 
         progressDialog.Show(App.MainWindow);
 
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             if (mod.IsEnable)
             {
-                mod.Disable();
+                await _modService.DisableAsync(mod);
             }
             else
             {
-                mod.Enable();
+                await _modService.EnableAsync(mod);
             }
             Mods.Refresh(mod);
-            _manager.Save();
         });
 
         progressDialog.Close();
@@ -125,11 +119,10 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
         progressDialog.Show(App.MainWindow);
 
 
-        Task.Run(() =>
+        Task.Run(async () =>
         {
-            mod.Game.UninstallMod(mod);
+            await _modService.DeleteAsync(mod);
             Mods.Remove(mod);
-            _manager.Save();
         });
         
         progressDialog.Close();
@@ -144,7 +137,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
         };
         progressDialog.Show(App.MainWindow);
         
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             var index = Mods.IndexOf(mod);
             if (index > 0)
@@ -152,9 +145,8 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 var temp = Mods[index - 1];
                 Mods[index - 1] = mod;
                 Mods[index] = temp;
-                _game.SwapOrder(mod, index - 1);
+                await _modService.SwapOrderAsync(mod, index - 1);
                 Mods.Refresh(mod);
-                _manager.Save();
             }
         });
         
@@ -170,7 +162,7 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
         };
         progressDialog.Show(App.MainWindow);
         
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             var index = Mods.IndexOf(mod);
             if (index < Mods.Count - 1)
@@ -178,9 +170,8 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
                 var temp = Mods[index + 1];
                 Mods[index + 1] = mod;
                 Mods[index] = temp;
-                _game.SwapOrder(mod, index + 1);
+                await _modService.SwapOrderAsync(mod, index + 1);
                 Mods.Refresh(mod);
-                _manager.Save();
             }
         });
         
@@ -202,15 +193,13 @@ public partial class ManageModsViewModel(Game game, Manager manager) : ViewModel
             try
             {
                 mod.Name = modNameDialog.NameText;   
-                _manager.Save();
+                await _modService.UpdateAsync(mod);
                 Mods.Refresh(mod); 
             }
             catch (Exception e)
             {
                 await new ErrorDialog(){ SecondDescription = e.Message }.ShowDialog<bool>(App.MainWindow);
             }
-            
         }
     }
-    
 }

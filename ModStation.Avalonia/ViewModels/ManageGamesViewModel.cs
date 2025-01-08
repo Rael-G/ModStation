@@ -1,31 +1,36 @@
 using System.Collections.ObjectModel;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
-using ModManager;
-using System.Linq;
 using ModManager.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ModStation.Avalonia.Views;
-using ModManager.Core.Exceptions;
 using ModStation.Avalonia.Extensions;
+using ModStation.Core.Interfaces;
 
 namespace ModStation.Avalonia.ViewModels
 {
     public partial class ManageGamesViewModel : ViewModelBase
     {
-        private readonly Manager _manager;
-        
         public ObservableCollection<Game> Games { get; set; }
 
         [ObservableProperty]
         private Game? _selectedGame;
 
-        public ManageGamesViewModel(Manager manager)
+        private readonly IGameService _gameService;
+        private readonly IModService _modService;
+
+        public ManageGamesViewModel(IGameService gameService, IModService modService)
         {
-            _manager = manager;
-            Games = new(_manager.Games);
+            _gameService = gameService;
+            _modService = modService;
+            Games = [];
+            _ = InitializeGamesAsync();
+        }
+
+        private async Task InitializeGamesAsync()
+        {
+            Games = [.. await _gameService.GetAllAsync()];
         }
 
         [RelayCommand]
@@ -58,7 +63,7 @@ namespace ModStation.Avalonia.ViewModels
                     {
                         try
                         {
-                            var game = _manager.AddGame(gamePath, gameNameDialog.NameText);
+                            var game = await _gameService.CreateAsync(gamePath, gameNameDialog.NameText);
                             Games.Add(game);
                         }
                         catch (Exception e)
@@ -75,7 +80,7 @@ namespace ModStation.Avalonia.ViewModels
         {
             if (game != null)
             {
-                App.Services.GetRequiredService<MainWindowViewModel>().CurrentView = new ManageModsViewModel(game, _manager);
+                App.Services.GetRequiredService<MainWindowViewModel>().CurrentView = new ManageModsViewModel(game, _modService);
             }
         }
 
@@ -91,8 +96,7 @@ namespace ModStation.Avalonia.ViewModels
 
             Task.Run(() =>
             {
-                _manager.RemoveGame(game);
-                _manager.Save();
+                _gameService.DeleteAsync(game);
                 Games.Remove(game);
             });
 
@@ -114,7 +118,7 @@ namespace ModStation.Avalonia.ViewModels
                 try
                 {
                     game.Name = gameNameDialog.NameText;   
-                    _manager.Save();
+                    await _gameService.UpdateAsync(game);
                     Games.Refresh(game);
                 }
                 catch (Exception e)

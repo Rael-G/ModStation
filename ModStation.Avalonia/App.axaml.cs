@@ -5,8 +5,9 @@ using Avalonia.Markup.Xaml;
 using ModStation.Avalonia.ViewModels;
 using ModStation.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
-using ModManager;
-using ModManager.Core.Services;
+using ModStation.Core.Interfaces;
+using ModManager.Core.Repositories;
+using ModStation.Core.Services;
 
 namespace ModStation.Avalonia;
 
@@ -27,7 +28,16 @@ public partial class App : Application
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddSingleton(new Manager(InjectorService.GamesRepository.GetAll().ToList()));
+            serviceCollection.AddScoped<IGameRepository, GameRepository>();
+            serviceCollection.AddScoped<IModRepository, ModRepository>();
+            serviceCollection.AddScoped<IArchiveRepository, ArchiveRepository>();
+            serviceCollection.AddScoped<IArchiveModRepository, IArchiveModRepository>();
+
+            serviceCollection.AddScoped<IGameService, GameService>();
+            serviceCollection.AddScoped<IModService, ModsService>();
+            serviceCollection.AddScoped<IArchiveService, ArchiveService>();
+            serviceCollection.AddScoped<IFileService, FileService>();
+
             serviceCollection.AddSingleton<MainWindowViewModel>();
             serviceCollection.AddSingleton<ManageGamesViewModel>();
 
