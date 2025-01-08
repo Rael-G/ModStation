@@ -44,7 +44,7 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
         await DeleteAllModsAsync(game);
         await RestoreBackupAsync(game);
         await ClearArchivesAsync(game);
-        await _fileService.DeleteDirectoryAsync(game.GamePath);
+        await _fileService.DeleteDirectoryAsync(game.BasePath);
         await _gameRepository.DeleteAsync(game);
     }
 
