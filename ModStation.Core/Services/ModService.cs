@@ -1,3 +1,4 @@
+using System.Data;
 using System.Threading.Tasks;
 using ModManager.Core.Entities;
 using ModStation.Core.Interfaces;
@@ -23,12 +24,13 @@ public class ModsService(IModRepository modRepository,
         using var connection = _modRepository.CreateConnection();
         using var transaction = _modRepository.CreateTransaction(connection);
         Mod mod = null!;
+        var modPath = string.Empty;
         try
         {
             _fileService.ValidatePath(sourcePath);
 
             var modId = Guid.NewGuid().ToString();
-            var modPath = _fileService.CreateDirectory(game.ModsPath, modName);
+            modPath = _fileService.CreateDirectory(game.ModsPath, modName);
 
             mod = new Mod(modId, modName, modPath, game, []);
             await _modRepository.CreateAsync(mod, connection, transaction);
@@ -48,16 +50,21 @@ public class ModsService(IModRepository modRepository,
             {
                 string relativePath = Path.GetRelativePath(mod.ModPath, filePath);
                 var archive = mod.Game.Archives.FirstOrDefault(a => a.RelativePath == relativePath) 
-                            ?? await CreateAndRegisterArchiveAsync(mod, relativePath);
+                            ?? await CreateAndRegisterArchiveAsync(mod, relativePath, connection, transaction);
 
                 mod.Archives.Add(archive);
                 mod.Game.Archives.Add(archive);
-                await LinkArchiveToModAsync(mod, archive);
+                await _archiveModRepository.CreateAsync(archive.Id, mod.Id, connection, transaction);
+                archive.Mods.Add(mod);
             }
         }
         catch
         {
             transaction.Rollback();
+            await _fileService.DeleteDirectoryAsync(modPath);
+            game.Mods.Remove(mod);
+            
+            throw;
         }
 
         transaction.Commit();
@@ -136,17 +143,11 @@ public class ModsService(IModRepository modRepository,
         if (enabled) await EnableAsync(mod);
     }
 
-    private async Task<Archive> CreateAndRegisterArchiveAsync(Mod mod, string relativePath)
+    private async Task<Archive> CreateAndRegisterArchiveAsync(Mod mod, string relativePath, IDbConnection connection, IDbTransaction transaction)
     {
         var archive = new Archive(Guid.NewGuid().ToString(), relativePath, mod.Game, []);
-        await _archiveRepository.CreateAsync(archive);
+        await _archiveRepository.CreateAsync(archive, connection, transaction);
         return archive;
-    }
-
-    private async Task LinkArchiveToModAsync(Mod mod, Archive archive)
-    {
-        archive.Mods.Add(mod);
-        await _archiveModRepository.CreateAsync(archive.Id, mod.Id);
     }
 
     private async Task UnlinkArchivesAsync(Mod mod)

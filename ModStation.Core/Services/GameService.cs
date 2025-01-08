@@ -30,6 +30,7 @@ public class GameService(IGameRepository gameRepository, IArchiveService archive
         {
             await _fileService.DeleteDirectoryAsync(backupPath);
             await _fileService.DeleteDirectoryAsync(modsPath);
+            throw;
         }
 
         return game;
