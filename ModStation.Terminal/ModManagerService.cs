@@ -1,14 +1,16 @@
 using Spectre.Console;
 using ModManager.Core.Entities;
 using ModManager.Core.Exceptions;
+using ModStation.Core.Interfaces;
 
 namespace ModManager.Terminal;
 
-public class ModManagerService(Manager manager)
+public class ModManagerService(IModService modService, IGameService gameService)
 {
-    private readonly Manager _manager = manager;
+    private readonly IModService _modService = modService;
+    private readonly IGameService _gameService = gameService;
 
-    public void ManageMods(Game game)
+    public async Task ManageMods(Game game)
     {
         static string ModOption(Mod mod)
         {
@@ -33,16 +35,16 @@ public class ModManagerService(Manager manager)
 
             if (choice == "Install Mod")
             {
-                InstallMod(game);
+                await InstallMod(game);
             }
             else if (choice == "Remove Game")
             {
-                RemoveGame(game);
+                await RemoveGame(game);
                 break;
             }
             else if (choice == "Change Order")
             {
-                new OrderMenu(game, _manager).Show();
+                new OrderMenu(game, _modService).Show();
             }
             else if (choice == "Back")
             {
@@ -50,19 +52,18 @@ public class ModManagerService(Manager manager)
             }
             else if (choice == "Exit")
             {
-                _manager.Save();
                 Environment.Exit(0);
             }
             else
             {
                 var mod = game.Mods
                     .First(m => choice == ModOption(m));
-                ManageModActions(mod);
+                await ManageModActions(mod);
             }
         }
     }
 
-    private void InstallMod(Game game)
+    private async Task InstallMod(Game game)
     {
         AnsiConsole.MarkupLine("[green]Enter the mod path:[/]");
         var modPath = ReadLine.Read();
@@ -84,7 +85,7 @@ public class ModManagerService(Manager manager)
 
         try
         {
-            game.InstallMod(modPath, modName);
+            await _modService.CreateAsync(modName, modPath, game);
         }
         catch(DuplicatedEntityException e)
         {
@@ -97,7 +98,7 @@ public class ModManagerService(Manager manager)
         AnsiConsole.MarkupLine($"[green]{modName} installed![/]");
     }
 
-    private void ManageModActions(Mod mod)
+    private async Task ManageModActions(Mod mod)
     {
         while (true)
         {
@@ -114,15 +115,15 @@ public class ModManagerService(Manager manager)
 
             if (choice == "Enable Mod")
             {
-                mod.Enable();
+                await _modService.EnableAsync(mod);
             }
             else if (choice == "Disable Mod")
             {
-                mod.Disable();
+                await _modService.DisableAsync(mod);
             }
             else if (choice == "Uninstall Mod")
             {
-                mod.Game.UninstallMod(mod);
+                await _modService.DeleteAsync(mod);
                 break;
             }
             else if (choice == "Back")
@@ -131,22 +132,20 @@ public class ModManagerService(Manager manager)
             }
             else if (choice == "Exit")
             {
-                _manager.Save();
                 Environment.Exit(0);
             }
         }
     }
 
-    private void RemoveGame(Game game)
+    private async Task RemoveGame(Game game)
     {
         var confirm = AnsiConsole.Confirm("[red]This action will remove all mods from [blue]" + game.Name + "[/] and restore the original files. Do you want to continue?[/]", false);
         if (confirm)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Status().Start($"Removing {game.Name} ...", ctx =>
+            await AnsiConsole.Status().Start($"Removing {game.Name} ...", async ctx =>
             {
-                _manager.RemoveGame(game);
-                _manager.Save();
+                await _gameService.DeleteAsync(game);
                 AnsiConsole.Clear();
                 AnsiConsole.MarkupLine($"[green]{game.Name} has been removed![/]");
             });

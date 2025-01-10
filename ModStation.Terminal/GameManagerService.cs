@@ -1,24 +1,39 @@
 using Spectre.Console;
 using ModManager.Core.Entities;
 using ModManager.Core.Exceptions;
+using ModStation.Core.Interfaces;
 
 namespace ModManager.Terminal;
 
-public class GameManagerService(Manager manager)
+public class GameManagerService
 {
-    private readonly Manager _manager = manager;
+    private readonly IGameService _gameService;
+
+    private List<Game> _games;
+
+    public GameManagerService(IGameService gameService)
+    {
+        _gameService = gameService;
+        _games = [];
+        _ = InitializeAsync();
+    }
+
+    public async Task InitializeAsync()
+    {
+        _games = [.. await _gameService.GetAllAsync()];
+    }
 
     public List<string> GetGameChoices()
     {
-        return _manager.Games.Select(g => $"[green]{g.Name}[/]").ToList();
+        return _games.Select(g => $"[green]{g.Name}[/]").ToList();
     }
 
     public Game GetGameByName(string name)
     {
-        return _manager.Games.Last(g => name.Contains(g.Name));
+        return _games.Last(g => name.Contains(g.Name));
     }
 
-    public void AddGame()
+    public async Task AddGame()
     {
         AnsiConsole.MarkupLine("[green]Enter the game path:[/]");
         var gamePath = ReadLine.Read();
@@ -38,8 +53,7 @@ public class GameManagerService(Manager manager)
 
         try
         {
-            _manager.AddGame(gamePath, name);
-            _manager.Save();
+            await _gameService.CreateAsync(gamePath, name);
 
             AnsiConsole.Clear();
             AnsiConsole.MarkupLine($"[green]{name} added successfully![/]");

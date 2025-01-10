@@ -1,13 +1,14 @@
 using ModManager.Core.Entities;
+using ModStation.Core.Interfaces;
 using Spectre.Console;
 
 namespace ModManager.Terminal;
 
-public class OrderMenu(Game game, Manager manager)
+public class OrderMenu(Game game, IModService modService)
 {
-    private readonly Game _game = game ?? throw new ArgumentNullException(nameof(game));
-    private readonly Manager _manager = manager ?? throw new ArgumentNullException(nameof(manager));
-    private List<Mod> _orderedMods = new List<Mod>();
+    private readonly Game _game = game;
+    private readonly IModService _modService = modService;
+    private List<Mod> _orderedMods = [];
     private int _currentIndex = 0;
 
     public void Show()
@@ -132,13 +133,12 @@ public class OrderMenu(Game game, Manager manager)
         (_orderedMods[index2], _orderedMods[index1]) = (_orderedMods[index1], _orderedMods[index2]);
     }
 
-    private void ApplyOrderChanges()
+    private async Task ApplyOrderChanges()
     {
-        AnsiConsole.Status().Start("Adjusting mod order...", ctx =>
+        await AnsiConsole.Status().Start("Adjusting mod order...", async ctx =>
         {
             var modToMove = _orderedMods[_currentIndex];
-            _game.SwapOrder(modToMove, _currentIndex);
-            _manager.Save();
+            await _modService.SwapOrderAsync(modToMove, _currentIndex);
         });
 
         AnsiConsole.MarkupLine($"[green]The order of [blue]{_orderedMods[_currentIndex].Name}[/] was adjusted to position {_currentIndex + 1}![/]");

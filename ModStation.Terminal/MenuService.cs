@@ -1,21 +1,21 @@
-using ModManager.Core.Services;
+using System.Threading.Tasks;
+using ModStation.Core.Interfaces;
 using Spectre.Console;
 
 namespace ModManager.Terminal;
 
 public class MenuService
 {
-    private readonly Manager _manager = new(InjectorService.GamesRepository.GetAll().ToList());
     private readonly GameManagerService _gameManager;
     private readonly ModManagerService _modManager;
 
-    public MenuService()
+    public MenuService(IGameService gameService, IModService modService)
     {
-        _gameManager = new GameManagerService(_manager);
-        _modManager = new ModManagerService(_manager);
+        _gameManager = new GameManagerService(gameService);
+        _modManager = new ModManagerService(modService, gameService);
     }
 
-    public void Run()
+    public async Task Run()
     {
         while (true)
         {
@@ -30,11 +30,10 @@ public class MenuService
 
             if (choice == "Add Game")
             {
-                _gameManager.AddGame();
+                await _gameManager.AddGame();
             }
             else if (choice == "Exit")
             {
-                _manager.Save();
                 Environment.Exit(0);
             }
             else
