@@ -63,11 +63,12 @@ public partial class ManageModsViewModel(Game game, IModService modService) : Vi
                     Text = $"Installing {modName}",
                 };
 
-                progressDialog.Show(mainWindow);
+                var _ = progressDialog.ShowDialog(mainWindow);
                 try
                 {
                     var mod = await _modService.CreateAsync(modName, modPath, _game);
                     Mods.Insert(0, mod);
+                    Mods.RefreshAll();
                 }
                 catch (Exception e)
                 {

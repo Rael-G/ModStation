@@ -56,7 +56,7 @@
 
                         <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" Margin="5" Foreground="White"/>
 
-                        <TextBlock Text="{Binding IsEnable, Converter={StaticResource EnableStatusConverter}, ConverterParameter=EnabledDisabled}" 
+                        <TextBlock Text="{Binding IsEnabled, Converter={StaticResource EnableStatusConverter}, ConverterParameter=EnabledDisabled}" 
                                 Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="3" Margin="5">
@@ -72,7 +72,7 @@
             </ListBox.ItemTemplate>
             <ListBox.ContextMenu>
                 <ContextMenu IsVisible="{Binding SelectedMod, Converter={StaticResource NullToVisibilityConverter}}">
-                    <MenuItem Header="{Binding SelectedMod.IsEnable, Converter={StaticResource EnableStatusConverter}, ConverterParameter=Inverse}" 
+                    <MenuItem Header="{Binding SelectedMod.IsEnabled, Converter={StaticResource EnableStatusConverter}, ConverterParameter=Inverse}" 
                             Command="{Binding ((vm:ManageModsViewModel)DataContext).ToggleModCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
                             CommandParameter="{Binding SelectedMod}" />
                     <MenuItem Header="Rename Mod"
